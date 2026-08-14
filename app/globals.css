@@ -1,0 +1,127 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
+
+  --color-ivory: #F6F1E9;
+  --color-sand: #DCD0BC;
+  --color-clay: #A8532E;
+  --color-clay-dark: #7E3C1F;
+  --color-ink: #1D1A16;
+  --color-ink-soft: #4A4238;
+  --color-gold: #B08D3F;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background: var(--color-ivory);
+  color: var(--color-ink);
+  font-family: var(--font-body);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+::selection {
+  background: var(--color-clay);
+  color: var(--color-ivory);
+}
+
+.underline-draw {
+  position: relative;
+  display: inline-block;
+}
+.underline-draw::after {
+  content: '';
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  height: 1px;
+  width: 100%;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform 0.45s cubic-bezier(0.65, 0, 0.35, 1);
+}
+.group:hover .underline-draw::after {
+  transform: scaleX(1);
+}
+
+.card-fade {
+  transition: opacity 0.6s ease;
+}
+
+.watermark-u {
+  font-family: var(--font-display);
+  font-weight: 300;
+  font-style: italic;
+  line-height: 0.8;
+  color: var(--color-ink);
+  opacity: 0.05;
+  user-select: none;
+  pointer-events: none;
+}
+
+@keyframes marquee {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+.animate-marquee {
+  animation: marquee 30s linear infinite;
+}
+
+@keyframes blink-caret {
+  0%, 45% { opacity: 1; }
+  50%, 95% { opacity: 0; }
+  100% { opacity: 1; }
+}
+.caret {
+  animation: blink-caret 0.9s steps(1) infinite;
+}
+
+/* ── Intro typing animation ── */
+@keyframes intro-char-in {
+  from {
+    opacity: 0;
+    transform: translateY(0.14em);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.intro-char {
+  animation: intro-char-in 0.42s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+.intro-caret {
+  animation: blink-caret 0.85s steps(1) infinite;
+  will-change: opacity;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .intro-overlay,
+  .intro-content,
+  .intro-char {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* ── Hide scrollbar utilities ── */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;  /* IE and Edge */
+  scrollbar-width: none;  /* Firefox */
+}
+
+button {
+  cursor: pointer;
+}
