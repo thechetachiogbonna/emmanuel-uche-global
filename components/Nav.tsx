@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
-import { useCustomerAuth } from "@/lib/customer/useCustomerAuth";
+import { logoutAction } from "@/lib/actions/auth";
 
 const links = [
   { label: "Shop", href: "/#shop" },
@@ -11,16 +11,18 @@ const links = [
   { label: "Made-to-Order", href: "/#made-to-order" },
 ];
 
-export default function Nav() {
+type Session = { name: string; email: string } | null;
+
+export default function Nav({ session }: { session: Session }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
-  const { session, hydrated, logout } = useCustomerAuth();
   const firstName = session?.name.split(" ")[0];
 
-  const handleLogout = () => {
-    logout();
+  const handleLogout = async () => {
+    await logoutAction();
     setOpen(false);
     router.push("/");
+    router.refresh();
   };
 
   return (
@@ -69,7 +71,7 @@ export default function Nav() {
             Aba, NG
           </span>
 
-          {hydrated && session ? (
+          {session ? (
             <div className="hidden md:flex items-center gap-3 text-[12px] tracking-wide uppercase">
               <span className="text-ink-soft">Hi, {firstName}</span>
               <button
@@ -111,7 +113,7 @@ export default function Nav() {
               {l.label}
             </Link>
           ))}
-          {hydrated && session ? (
+          {session ? (
             <button
               onClick={handleLogout}
               className="text-left px-6 py-4 text-sm tracking-wide uppercase border-b border-ink/5"

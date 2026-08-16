@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
-import { useCustomerAuth } from "@/lib/customer/useCustomerAuth";
 
 const SESSION_FLAG = "uche_signup_prompt_shown";
 const SKIP_PATHS = ["/login", "/signup"];
 
-export default function SignupPrompt() {
+type Session = { name: string; email: string } | null;
+
+export default function SignupPrompt({ session }: { session: Session }) {
   const pathname = usePathname();
-  const { session, hydrated } = useCustomerAuth();
   const [visible, setVisible] = useState(false);
   const thresholdRef = useRef<number | null>(null);
   const shownRef = useRef(false);
@@ -18,7 +18,7 @@ export default function SignupPrompt() {
   const skip = SKIP_PATHS.some((p) => pathname?.startsWith(p));
 
   useEffect(() => {
-    if (skip || !hydrated || session) return;
+    if (skip || session) return;
 
     let alreadyShown = false;
     try {
@@ -55,7 +55,7 @@ export default function SignupPrompt() {
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
-  }, [skip, hydrated, session]);
+  }, [skip, session]);
 
   useEffect(() => {
     if (!visible) return;

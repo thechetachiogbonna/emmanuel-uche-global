@@ -2,17 +2,14 @@
 
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { useState } from "react";
 import ProductForm from "@/components/admin/ProductForm";
-import { useAdminCollections } from "@/lib/admin/useAdminData";
+import { createProductAction } from "@/lib/actions/admin-collections";
 
 export default function NewProductPage() {
   const router = useRouter();
   const params = useParams<{ slug: string }>();
-  const { collections, addProduct, hydrated } = useAdminCollections();
-
-  const collection = collections.find((c) => c.slug === params.slug);
-
-  if (!hydrated) return null;
+  const [error, setError] = useState<string | null>(null);
 
   return (
     <div>
@@ -20,16 +17,23 @@ export default function NewProductPage() {
         href={`/admin/collections/${params.slug}`}
         className="text-[12px] tracking-wide uppercase text-ink-soft hover:text-ink"
       >
-        ← Back to {collection?.name ?? "Collection"}
+        ← Back to Collection
       </Link>
       <h1 className="font-display text-2xl md:text-3xl mt-3 mb-6">
         Add Product
       </h1>
+      {error && <p className="text-[13px] text-red-700 mb-4">{error}</p>}
       <ProductForm
         submitLabel="Create Product"
-        onSubmit={(draft) => {
-          addProduct(params.slug, draft);
+        onSubmit={async (draft) => {
+          setError(null);
+          const result = await createProductAction(params.slug, draft);
+          if (!result.ok) {
+            setError(result.error);
+            return;
+          }
           router.push(`/admin/collections/${params.slug}`);
+          router.refresh();
         }}
       />
     </div>

@@ -1,10 +1,10 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import type { AdminCollection, CollectionStatus } from "@/lib/admin/types";
-import { slugify } from "@/lib/admin/format";
+import type { CollectionDraft } from "@/lib/actions/admin-collections";
+import { slugify } from "@/lib/slug";
 
-type Draft = Omit<AdminCollection, "products">;
+type Draft = CollectionDraft;
 
 export default function CollectionForm({
   initial,
@@ -15,7 +15,7 @@ export default function CollectionForm({
 }: {
   initial?: Draft;
   existingSlugs: string[];
-  onSubmit: (draft: Draft) => void;
+  onSubmit: (draft: Draft) => void | Promise<void>;
   submitLabel: string;
   lockSlug?: boolean;
 }) {
@@ -25,7 +25,7 @@ export default function CollectionForm({
   const [season, setSeason] = useState(initial?.season ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [image, setImage] = useState(initial?.image ?? "");
-  const [status, setStatus] = useState<CollectionStatus>(
+  const [status, setStatus] = useState<CollectionDraft["status"]>(
     initial?.status ?? "coming-soon"
   );
   const [error, setError] = useState<string | null>(null);
@@ -115,7 +115,9 @@ export default function CollectionForm({
             </label>
             <select
               value={status}
-              onChange={(e) => setStatus(e.target.value as CollectionStatus)}
+              onChange={(e) =>
+                setStatus(e.target.value as CollectionDraft["status"])
+              }
               className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors bg-white"
             >
               <option value="available">Available</option>

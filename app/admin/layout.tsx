@@ -1,4 +1,3 @@
-import AdminGate from "@/components/admin/AdminGate";
 import AdminShell from "@/components/admin/AdminShell";
 
 export const metadata = {
@@ -6,14 +5,11 @@ export const metadata = {
   robots: { index: false, follow: false },
 };
 
-export default function AdminLayout({
+export default async function ProtectedAdminLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
-  return (
-    <AdminGate>
-      <AdminShell>{children}</AdminShell>
-    </AdminGate>
-  );
+
+  return <AdminShell adminEmail={"admin@uchefashion.com"}>{children}</AdminShell>;
 }

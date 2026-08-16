@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
-import type { AdminProduct } from "@/lib/admin/types";
+import type { ProductDraft } from "@/lib/actions/admin-collections";
 
-type Draft = Omit<AdminProduct, "id">;
+type Draft = ProductDraft;
 
 const PLACEHOLDER =
   "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=700&q=80";
@@ -14,7 +14,7 @@ export default function ProductForm({
   submitLabel,
 }: {
   initial?: Draft;
-  onSubmit: (draft: Draft) => void;
+  onSubmit: (draft: Draft) => void | Promise<void>;
   submitLabel: string;
 }) {
   const [name, setName] = useState(initial?.name ?? "");

@@ -1,9 +1,9 @@
 const ORDER_COLORS: Record<string, string> = {
-  Pending: "bg-sand/60 text-ink-soft",
-  Processing: "bg-gold/20 text-gold",
-  Shipped: "bg-[#3B5B8C]/10 text-[#3B5B8C]",
-  Delivered: "bg-green-700/10 text-green-800",
-  Cancelled: "bg-red-700/10 text-red-800",
+  pending: "bg-sand/60 text-ink-soft",
+  processing: "bg-gold/20 text-gold",
+  shipped: "bg-[#3B5B8C]/10 text-[#3B5B8C]",
+  delivered: "bg-green-700/10 text-green-800",
+  cancelled: "bg-red-700/10 text-red-800",
 };
 
 const COLLECTION_COLORS: Record<string, string> = {

@@ -1,12 +1,11 @@
 "use client";
 
 import { useRef } from "react";
-import { collections } from "@/lib/data";
 import ProductCard from "@/components/ProductCard";
 import Link from "next/link";
+import type { Product } from "@/lib/data";
 
-export default function ProductRail() {
-  const featured = collections[0];
+export default function ProductRail({ products }: { products: Product[] }) {
   const railRef = useRef<HTMLDivElement>(null);
 
   const scrollNext = () => {
@@ -61,7 +60,7 @@ export default function ProductRail() {
           ref={railRef}
           className="flex gap-6 overflow-x-auto snap-x snap-mandatory pb-4 -mx-6 px-6 md:mx-0 md:px-0 scroll-px-6 md:scroll-px-0 scrollbar-hide scroll-smooth"
         >
-          {featured.products.map((product) => (
+          {products.map((product) => (
             <ProductCard
               key={product.name}
               product={product}

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Marquee from "@/components/Marquee";
 import PageHero from "@/components/PageHero";
 import CollectionsGrid from "@/components/CollectionsGrid";
-import { collections } from "@/lib/data";
+import { getCollections } from "@/lib/data";
 
 export const metadata: Metadata = {
   title: "Collections — Uche Fashion International",
@@ -10,7 +10,9 @@ export const metadata: Metadata = {
     "Browse ready-to-wear and made-to-order collections from Uche Fashion International.",
 };
 
-export default function CollectionsPage() {
+export default async function CollectionsPage() {
+  const collections = await getCollections();
+
   return (
     <main className="flex-1">
       <PageHero

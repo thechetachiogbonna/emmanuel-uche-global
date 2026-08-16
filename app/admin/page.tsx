@@ -1,30 +1,19 @@
-"use client";
-
 import Link from "next/link";
-import {
-  useAdminCollections,
-  useAdminCustomers,
-  useAdminOrders,
-} from "@/lib/admin/useAdminData";
+import { getAdminCollections, getAdminCustomers, getAdminOrders } from "@/lib/admin/queries";
 import { formatDate } from "@/lib/admin/format";
 import StatCard from "@/components/admin/StatCard";
 import { OrderStatusBadge } from "@/components/admin/Badge";
 
-export default function AdminDashboard() {
-  const { collections } = useAdminCollections();
-  const { orders } = useAdminOrders();
-  const { customers } = useAdminCustomers();
+export default async function AdminDashboard() {
+  const [collections, orders, customers] = await Promise.all([
+    getAdminCollections(),
+    getAdminOrders(),
+    getAdminCustomers(),
+  ]);
 
-  const totalProducts = collections.reduce(
-    (sum, c) => sum + c.products.length,
-    0
-  );
-  const liveCollections = collections.filter(
-    (c) => c.status === "available"
-  ).length;
-  const recentOrders = [...orders]
-    .sort((a, b) => (a.date < b.date ? 1 : -1))
-    .slice(0, 5);
+  const totalProducts = collections.reduce((sum, c) => sum + c.products.length, 0);
+  const liveCollections = collections.filter((c) => c.status === "available").length;
+  const recentOrders = orders.slice(0, 5);
 
   return (
     <div>
@@ -80,6 +69,13 @@ export default function AdminDashboard() {
                     </td>
                   </tr>
                 ))}
+                {recentOrders.length === 0 && (
+                  <tr>
+                    <td colSpan={5} className="px-4 py-8 text-center text-ink-soft">
+                      No orders yet.
+                    </td>
+                  </tr>
+                )}
               </tbody>
             </table>
           </div>
@@ -102,6 +98,11 @@ export default function AdminDashboard() {
                 </span>
               </Link>
             ))}
+            {collections.length === 0 && (
+              <p className="px-4 py-4 text-[13px] text-ink-soft">
+                No collections yet.
+              </p>
+            )}
           </div>
         </div>
       </div>

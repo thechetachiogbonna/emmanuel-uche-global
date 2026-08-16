@@ -2,18 +2,22 @@ import IntroLoader from "@/components/IntroLoader";
 import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
 import SignupPrompt from "@/components/SignupPrompt";
+import { getCurrentUser } from "@/lib/auth";
 
-export default function SiteLayout({
+export default async function SiteLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const user = await getCurrentUser();
+  const session = user ? { name: user.name, email: user.email } : null;
+
   return (
     <>
-      <Nav />
+      <Nav session={session} />
       <IntroLoader>{children}</IntroLoader>
       <Footer />
-      <SignupPrompt />
+      <SignupPrompt session={session} />
     </>
   );
 }

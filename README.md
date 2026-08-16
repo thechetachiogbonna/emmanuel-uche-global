@@ -1,36 +1,47 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Uche Fashion International
 
-## Getting Started
+## Setup
 
-First, run the development server:
+1. Install dependencies:
+   ```bash
+   npm install
+   ```
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+2. Set up Postgres. Any of these work:
+   - Local Postgres (Postgres.app on Mac, or Docker: `docker run -d -p 5432:5432 -e POSTGRES_PASSWORD=postgres postgres:16`)
+   - A hosted instance: [Neon](https://neon.tech), [Supabase](https://supabase.com), [Railway](https://railway.app), or [Render](https://render.com) all have free tiers
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+3. Copy the env example and fill in your real values:
+   ```bash
+   cp .env.example .env
+   ```
+   - `DATABASE_URL` — your Postgres connection string
+   - `SESSION_SECRET` — generate one with `openssl rand -base64 32`
+   - `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` — your first admin login, used only by the seed script
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+4. Run migrations, then seed:
+   ```bash
+   npm run db:migrate
+   npm run db:seed
+   ```
+   This creates your admin user and seeds the same collections/products the site shipped with, plus a few sample customers and orders so the admin console isn't empty.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+5. Start the dev server:
+   ```bash
+   npm run dev
+   ```
 
-## Learn More
+6. Log into the admin console at `/admin/login` with the email/password you set in `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD`.
 
-To learn more about Next.js, take a look at the following resources:
+## Database commands
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+- `npm run db:generate` — generate a new migration after changing `lib/db/schema.ts`
+- `npm run db:migrate` — apply pending migrations
+- `npm run db:seed` — re-run the seed script (safe to re-run; uses `onConflictDoNothing`)
+- `npm run db:studio` — opens Drizzle Studio, a GUI for browsing your database
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Stack notes
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **ORM**: [Drizzle](https://orm.drizzle.team), not Prisma — Prisma's engine binaries need network access this environment didn't have during development, so this was built and verified against Drizzle instead. Functionally equivalent for this project's needs.
+- **Auth**: real bcrypt password hashing (`bcryptjs`) and DB-backed session tokens in httpOnly cookies (`lib/session.ts`) — no more localStorage.
+- **Admin mutations**: Next.js Server Actions (`lib/actions/`), each re-checking the admin session server-side via `requireAdmin()` — the UI hiding buttons is not what protects these.

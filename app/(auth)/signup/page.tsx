@@ -3,11 +3,10 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { useCustomerAuth } from "@/lib/customer/useCustomerAuth";
+import { signupAction } from "@/lib/actions/auth";
 
 export default function SignupPage() {
   const router = useRouter();
-  const { signup } = useCustomerAuth();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -15,20 +14,21 @@ export default function SignupPage() {
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (password !== confirm) {
       setError("Passwords don't match.");
       return;
     }
     setSubmitting(true);
-    const result = signup(name, email, password);
+    const result = await signupAction(name, email, password);
     setSubmitting(false);
     if (!result.ok) {
       setError(result.error);
       return;
     }
     router.push("/");
+    router.refresh();
   };
 
   return (

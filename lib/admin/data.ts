@@ -1,4 +1,4 @@
-import { collections as siteCollections } from "@/lib/data";
+import { getCollections } from "@/lib/data";
 import type {
   AdminCollection,
   Customer,
@@ -6,11 +6,11 @@ import type {
   StoreSettings,
 } from "./types";
 
-// Seeded directly from the live site's lib/data.ts, so the admin console
-// starts out mirroring what's actually published. Each product gets a
-// stable id (site data has none — products are keyed by name there).
-export const SEED_COLLECTIONS: AdminCollection[] = siteCollections.map(
-  (c) => ({
+// Seeded directly from the live site's getCollections() in lib/data.ts,
+// so the admin console starts out mirroring what's actually published.
+export async function getSeedCollections(): Promise<AdminCollection[]> {
+  const siteCollections = await getCollections();
+  return siteCollections.map((c) => ({
     slug: c.slug,
     season: c.season,
     name: c.name,
@@ -24,8 +24,8 @@ export const SEED_COLLECTIONS: AdminCollection[] = siteCollections.map(
       img1: p.img1,
       img2: p.img2,
     })),
-  })
-);
+  }));
+}
 
 export const SEED_ORDERS: Order[] = [
   {

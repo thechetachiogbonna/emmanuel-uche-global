@@ -1,25 +1,22 @@
-"use client";
-
-import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
-import ProductForm from "@/components/admin/ProductForm";
-import { useAdminCollections } from "@/lib/admin/useAdminData";
+import { getAdminCollections } from "@/lib/admin/queries";
+import EditProductForm from "@/components/admin/EditProductForm";
 
-export default function EditProductPage() {
-  const router = useRouter();
-  const params = useParams<{ slug: string; productId: string }>();
-  const { collections, updateProduct, hydrated } = useAdminCollections();
-
-  const collection = collections.find((c) => c.slug === params.slug);
-  const product = collection?.products.find((p) => p.id === params.productId);
-
-  if (!hydrated) return null;
+export default async function EditProductPage({
+  params,
+}: {
+  params: Promise<{ slug: string; productId: string }>;
+}) {
+  const { slug, productId } = await params;
+  const collections = await getAdminCollections();
+  const collection = collections.find((c) => c.slug === slug);
+  const product = collection?.products.find((p) => p.id === productId);
 
   if (!collection || !product) {
     return (
       <div>
         <Link
-          href={`/admin/collections/${params.slug}`}
+          href={`/admin/collections/${slug}`}
           className="text-[12px] tracking-wide uppercase text-ink-soft hover:text-ink"
         >
           ← Back
@@ -42,12 +39,14 @@ export default function EditProductPage() {
       <h1 className="font-display text-2xl md:text-3xl mt-3 mb-6">
         Edit Product
       </h1>
-      <ProductForm
-        initial={product}
-        submitLabel="Save Changes"
-        onSubmit={(draft) => {
-          updateProduct(collection.slug, product.id, draft);
-          router.push(`/admin/collections/${collection.slug}`);
+      <EditProductForm
+        productId={product.id}
+        collectionSlug={collection.slug}
+        initial={{
+          name: product.name,
+          price: product.price,
+          img1: product.img1,
+          img2: product.img2,
         }}
       />
     </div>

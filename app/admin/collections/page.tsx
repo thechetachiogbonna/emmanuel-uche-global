@@ -1,13 +1,10 @@
-"use client";
-
 import Link from "next/link";
-import { useState } from "react";
-import { useAdminCollections } from "@/lib/admin/useAdminData";
+import { getAdminCollections } from "@/lib/admin/queries";
 import { CollectionStatusBadge } from "@/components/admin/Badge";
+import DeleteCollectionButton from "@/components/admin/DeleteCollectionButton";
 
-export default function CollectionsAdminPage() {
-  const { collections, deleteCollection } = useAdminCollections();
-  const [pendingDelete, setPendingDelete] = useState<string | null>(null);
+export default async function CollectionsAdminPage() {
+  const collections = await getAdminCollections();
 
   return (
     <div>
@@ -68,12 +65,10 @@ export default function CollectionsAdminPage() {
                     >
                       Manage
                     </Link>
-                    <button
-                      onClick={() => setPendingDelete(c.slug)}
-                      className="text-[12px] tracking-wide uppercase text-ink-soft hover:text-red-700"
-                    >
-                      Delete
-                    </button>
+                    <DeleteCollectionButton
+                      slug={c.slug}
+                      productCount={c.products.length}
+                    />
                   </div>
                 </td>
               </tr>
@@ -88,37 +83,6 @@ export default function CollectionsAdminPage() {
           </tbody>
         </table>
       </div>
-
-      {pendingDelete && (
-        <div className="fixed inset-0 z-50 bg-ink/40 flex items-center justify-center px-6">
-          <div className="bg-white max-w-sm w-full p-6">
-            <h3 className="font-display text-xl mb-2">Delete collection?</h3>
-            <p className="text-[13px] text-ink-soft mb-6">
-              This removes the collection and all {" "}
-              {collections.find((c) => c.slug === pendingDelete)?.products
-                .length ?? 0}{" "}
-              of its products. This can&apos;t be undone.
-            </p>
-            <div className="flex gap-3">
-              <button
-                onClick={() => setPendingDelete(null)}
-                className="flex-1 border border-ink/20 py-2.5 text-[12px] tracking-wide uppercase hover:border-ink transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  deleteCollection(pendingDelete);
-                  setPendingDelete(null);
-                }}
-                className="flex-1 bg-red-700 text-white py-2.5 text-[12px] tracking-wide uppercase hover:bg-red-800 transition-colors"
-              >
-                Delete
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

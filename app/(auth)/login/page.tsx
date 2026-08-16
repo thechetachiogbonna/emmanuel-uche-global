@@ -3,26 +3,26 @@
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, type FormEvent } from "react";
-import { useCustomerAuth } from "@/lib/customer/useCustomerAuth";
+import { loginAction } from "@/lib/actions/auth";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login } = useCustomerAuth();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const result = login(email, password);
+    const result = await loginAction(email, password);
     setSubmitting(false);
     if (!result.ok) {
       setError(result.error);
       return;
     }
     router.push("/");
+    router.refresh();
   };
 
   return (

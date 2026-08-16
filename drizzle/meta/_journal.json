@@ -1,0 +1,27 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1786778995326,
+      "tag": "0000_brief_beyonder",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1786779231525,
+      "tag": "0001_mute_spectrum",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1786924800000,
+      "tag": "0002_rename_customers_to_users_drop_admin_users",
+      "breakpoints": true
+    }
+  ]
+}

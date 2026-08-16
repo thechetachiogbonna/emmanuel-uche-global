@@ -3,21 +3,19 @@ import { notFound } from "next/navigation";
 import Marquee from "@/components/Marquee";
 import PageHero from "@/components/PageHero";
 import ProductGrid from "@/components/ProductGrid";
-import { collections, getCollection } from "@/lib/data";
+import { getCollection } from "@/lib/data";
+
+// Content here is admin-editable now, so this route renders per-request
+// rather than being statically generated at build time.
+export const dynamic = "force-dynamic";
 
 type Props = {
   params: Promise<{ slug: string }>;
 };
 
-export function generateStaticParams() {
-  return collections
-    .filter((c) => c.status === "available")
-    .map((c) => ({ slug: c.slug }));
-}
-
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
-  const collection = getCollection(slug);
+  const collection = await getCollection(slug);
 
   if (!collection) {
     return { title: "Collection Not Found" };
@@ -31,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
 export default async function CollectionPage({ params }: Props) {
   const { slug } = await params;
-  const collection = getCollection(slug);
+  const collection = await getCollection(slug);
 
   if (!collection || collection.status !== "available") {
     notFound();

@@ -1,5 +1,6 @@
 "use client";
 
+import { logoutAction } from "@/lib/actions/auth";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -13,8 +14,10 @@ const NAV = [
 
 export default function AdminShell({
   children,
+  adminEmail,
 }: {
   children: React.ReactNode;
+  adminEmail: string;
 }) {
   const pathname = usePathname();
   const router = useRouter();
@@ -22,9 +25,9 @@ export default function AdminShell({
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 
-  const logout = () => {
-    window.sessionStorage.removeItem("uche_admin_authed");
-    router.push("/admin");
+  const logout = async () => {
+    await logoutAction();
+    router.push("/");
     router.refresh();
   };
 
@@ -57,6 +60,9 @@ export default function AdminShell({
         </nav>
 
         <div className="px-3 py-4 border-t border-ink/10 flex flex-col gap-1">
+          <div className="px-3 py-1.5 text-[11px] text-ink-soft truncate" title={adminEmail}>
+            {adminEmail}
+          </div>
           <Link
             href="/"
             target="_blank"
