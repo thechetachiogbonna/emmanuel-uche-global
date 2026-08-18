@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Marquee from "@/components/Marquee";
 import PageHero from "@/components/PageHero";
 import ContactSection from "@/components/ContactSection";
+import { getStoreSettings } from "@/lib/admin/queries";
 
 export const metadata: Metadata = {
   title: "Contact — Uche Fashion International",
@@ -9,7 +10,9 @@ export const metadata: Metadata = {
     "Get in touch with Uche Fashion International for orders, made-to-order enquiries, and stockist partnerships.",
 };
 
-export default function ContactPage() {
+export default async function ContactPage() {
+  const settings = await getStoreSettings();
+
   return (
     <main className="flex-1">
       <PageHero
@@ -28,7 +31,14 @@ export default function ContactPage() {
         imageAlt="Uche Fashion International studio in Aba"
       />
       <Marquee />
-      <ContactSection />
+      <ContactSection
+        settings={{
+          studioLocation: settings.studioLocation,
+          supportEmail: settings.supportEmail,
+          supportPhone: settings.supportPhone,
+          hours: settings.hours,
+        }}
+      />
     </main>
   );
 }

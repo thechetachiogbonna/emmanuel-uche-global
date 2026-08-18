@@ -62,7 +62,7 @@ export default function ProductRail({ products }: { products: Product[] }) {
         >
           {products.map((product) => (
             <ProductCard
-              key={product.name}
+              key={product.id}
               product={product}
               className="shrink-0 w-[78vw] sm:w-[46vw] md:w-[24vw] snap-start"
             />

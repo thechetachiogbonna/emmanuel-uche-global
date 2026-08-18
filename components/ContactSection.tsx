@@ -2,32 +2,29 @@
 
 import { useState, type FormEvent } from "react";
 
-const contactDetails = [
-  {
-    label: "Studio",
-    value: "Aba, Nigeria",
-  },
-  {
-    label: "Email",
-    value: "hello@uchefashion.com",
-    href: "mailto:hello@uchefashion.com",
-  },
-  {
-    label: "Phone",
-    value: "+234 801 234 5678",
-    href: "tel:+2348012345678",
-  },
-  {
-    label: "Hours",
-    value: "Mon–Fri, 9am–6pm WAT",
-  },
-];
+type Settings = {
+  studioLocation: string;
+  supportEmail: string;
+  supportPhone: string;
+  hours: string;
+};
 
 const inputClass =
   "w-full bg-transparent border-b border-ink/15 py-3 text-[15px] text-ink placeholder:text-ink-soft/50 outline-none focus:border-clay transition-colors";
 
-export default function ContactSection() {
+export default function ContactSection({ settings }: { settings: Settings }) {
   const [submitted, setSubmitted] = useState(false);
+
+  const contactDetails = [
+    { label: "Studio", value: settings.studioLocation },
+    { label: "Email", value: settings.supportEmail, href: `mailto:${settings.supportEmail}` },
+    {
+      label: "Phone",
+      value: settings.supportPhone,
+      href: `tel:${settings.supportPhone.replace(/[^\d+]/g, "")}`,
+    },
+    { label: "Hours", value: settings.hours },
+  ];
 
   function handleSubmit(e: FormEvent<HTMLFormElement>) {
     e.preventDefault();

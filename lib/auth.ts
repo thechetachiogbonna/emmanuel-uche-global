@@ -76,3 +76,19 @@ export async function getCurrentUser() {
   });
   return account ?? null;
 }
+
+/**
+ * Every admin Server Action should call this first. proxy.ts already
+ * blocks unauthenticated/non-admin requests to /admin/* at the network
+ * level, but Server Actions are still technically-independent endpoints —
+ * this is the defense-in-depth check inside the action itself, so
+ * authorization doesn't rely on routing alone.
+ */
+export async function requireAdmin() {
+  const user = await getCurrentUser();
+  const subject = await getSessionSubjectTypeAndId();
+  if (!user || subject?.type !== "admin") {
+    throw new Error("Unauthorized — admin session required.");
+  }
+  return user;
+}

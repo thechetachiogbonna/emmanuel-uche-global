@@ -6,6 +6,7 @@ export async function proxy(request: NextRequest) {
   const sessionToken = sessionCookie?.value;
 
   const redirectUrl = new URL("/login", request.url);
+  redirectUrl.searchParams.set("redirect", request.nextUrl.pathname);
 
   if (!sessionToken) {
     return Response.redirect(redirectUrl);
@@ -18,7 +19,7 @@ export async function proxy(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname.startsWith("/admin") && sessionSubjectTypeAndId.type !== "admin") {
-    return new Response("Unauthorized", { status: 401 });
+    return Response.redirect(new URL("/", request.url));
   }
 }
 

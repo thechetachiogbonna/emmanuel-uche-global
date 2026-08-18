@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { Product } from "@/lib/data";
+import { useCart } from "@/lib/cart/CartContext";
 
 export default function ProductCard({
   product,
@@ -11,6 +12,19 @@ export default function ProductCard({
   className?: string;
 }) {
   const [hover, setHover] = useState(false);
+  const [added, setAdded] = useState(false);
+  const { addItem } = useCart();
+
+  const handleAdd = () => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      img1: product.img1,
+    });
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1400);
+  };
 
   return (
     <div
@@ -31,6 +45,13 @@ export default function ProductCard({
           className="absolute inset-0 w-full h-full object-cover card-fade"
           style={{ opacity: hover ? 1 : 0 }}
         />
+
+        <button
+          onClick={handleAdd}
+          className="absolute bottom-0 left-0 right-0 bg-ink text-ivory text-[11px] tracking-[0.14em] uppercase py-3 opacity-0 group-hover:opacity-100 translate-y-2 group-hover:translate-y-0 transition-all duration-300 hover:bg-clay"
+        >
+          {added ? "Added ✓" : "Add to Bag"}
+        </button>
       </div>
       <div className="flex items-center justify-between mt-4 gap-4">
         <span className="text-[14px] underline-draw">{product.name}</span>

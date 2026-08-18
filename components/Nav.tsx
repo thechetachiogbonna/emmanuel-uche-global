@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { logoutAction } from "@/lib/actions/auth";
+import { useCart } from "@/lib/cart/CartContext";
 
 const links = [
   { label: "Shop", href: "/#shop" },
@@ -16,6 +17,7 @@ type Session = { name: string; email: string } | null;
 export default function Nav({ session }: { session: Session }) {
   const [open, setOpen] = useState(false);
   const router = useRouter();
+  const { itemCount } = useCart();
   const firstName = session?.name.split(" ")[0];
 
   const handleLogout = async () => {
@@ -74,6 +76,9 @@ export default function Nav({ session }: { session: Session }) {
           {session ? (
             <div className="hidden md:flex items-center gap-3 text-[12px] tracking-wide uppercase">
               <span className="text-ink-soft">Hi, {firstName}</span>
+              <Link href="/orders" className="text-ink-soft hover:text-ink transition-colors">
+                Orders
+              </Link>
               <button
                 onClick={handleLogout}
                 className="text-ink-soft hover:text-ink transition-colors"
@@ -89,6 +94,13 @@ export default function Nav({ session }: { session: Session }) {
               <span className="underline-draw">Log In</span>
             </Link>
           )}
+
+          <Link
+            href="/cart"
+            className="text-[12px] tracking-[0.12em] uppercase text-ink-soft hover:text-ink transition-colors"
+          >
+            Bag {itemCount > 0 && `(${itemCount})`}
+          </Link>
 
           <button
             aria-label="Menu"
@@ -113,13 +125,29 @@ export default function Nav({ session }: { session: Session }) {
               {l.label}
             </Link>
           ))}
+          <Link
+            href="/cart"
+            onClick={() => setOpen(false)}
+            className="px-6 py-4 text-sm tracking-wide uppercase border-b border-ink/5"
+          >
+            Bag {itemCount > 0 && `(${itemCount})`}
+          </Link>
           {session ? (
-            <button
-              onClick={handleLogout}
-              className="text-left px-6 py-4 text-sm tracking-wide uppercase border-b border-ink/5"
-            >
-              Log Out ({firstName})
-            </button>
+            <>
+              <Link
+                href="/orders"
+                onClick={() => setOpen(false)}
+                className="px-6 py-4 text-sm tracking-wide uppercase border-b border-ink/5"
+              >
+                Orders
+              </Link>
+              <button
+                onClick={handleLogout}
+                className="text-left px-6 py-4 text-sm tracking-wide uppercase border-b border-ink/5"
+              >
+                Log Out ({firstName})
+              </button>
+            </>
           ) : (
             <Link
               href="/login"

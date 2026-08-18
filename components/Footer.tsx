@@ -1,15 +1,18 @@
 import Link from "next/link";
+import { getStoreSettings } from "@/lib/admin/queries";
 
-export default function Footer() {
+export default async function Footer() {
+  const settings = await getStoreSettings();
+
   return (
     <footer className="px-6 md:px-10 pt-20 pb-10 border-t border-ink/10 bg-ink text-ivory">
       <div className="grid md:grid-cols-12 gap-10 pb-16">
         <div className="md:col-span-4">
           <div className="font-display italic text-3xl mb-5">Uche</div>
           <p className="text-[14px] leading-relaxed text-ivory/60 max-w-xs">
-            Ready-to-wear and made-to-order pieces, hand-finished in Aba.
-            Rooted in Nigerian craft, made for wherever you&apos;re headed
-            next.
+            Ready-to-wear and made-to-order pieces, hand-finished in{" "}
+            {settings.studioLocation}. Rooted in Nigerian craft, made for
+            wherever you&apos;re headed next.
           </p>
         </div>
 
@@ -46,6 +49,14 @@ export default function Footer() {
                 Contact
               </Link>
             </li>
+            <li>
+              <a
+                href={`mailto:${settings.supportEmail}`}
+                className="hover:text-ivory transition-colors"
+              >
+                {settings.supportEmail}
+              </a>
+            </li>
           </ul>
         </div>
 
@@ -70,7 +81,9 @@ export default function Footer() {
       </div>
 
       <div className="flex flex-col md:flex-row justify-between gap-3 border-t border-ivory/10 pt-6 text-[11px] tracking-[0.06em] text-ivory/50">
-        <span>© 2026 Uche Fashion International — Aba, Nigeria</span>
+        <span>
+          © 2026 {settings.storeName} — {settings.studioLocation}
+        </span>
         <div className="flex gap-6">
           <a href="#" className="hover:text-ivory transition-colors">Instagram</a>
           <a href="#" className="hover:text-ivory transition-colors">TikTok</a>

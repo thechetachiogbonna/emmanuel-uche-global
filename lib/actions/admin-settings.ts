@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { storeSettings } from "@/lib/db/schema";
+import { requireAdmin } from "@/lib/auth";
 
 export type SettingsDraft = {
   storeName: string;
@@ -14,6 +15,8 @@ export type SettingsDraft = {
 };
 
 export async function updateSettingsAction(draft: SettingsDraft) {
+  await requireAdmin();
+
   const existing = await db.select().from(storeSettings).limit(1);
 
   if (existing[0]) {

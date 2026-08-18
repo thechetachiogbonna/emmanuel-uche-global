@@ -4,6 +4,7 @@ import { eq } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { orders } from "@/lib/db/schema";
+import { requireAdmin } from "@/lib/auth";
 
 const STATUSES = [
   "pending",
@@ -18,6 +19,7 @@ export async function updateOrderStatusAction(
   orderId: string,
   status: OrderStatus
 ) {
+  await requireAdmin();
   if (!STATUSES.includes(status)) {
     return { ok: false as const, error: "Invalid status." };
   }

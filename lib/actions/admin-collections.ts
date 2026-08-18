@@ -5,6 +5,7 @@ import { revalidatePath } from "next/cache";
 import { db } from "@/lib/db";
 import { collections, products } from "@/lib/db/schema";
 import { slugify } from "@/lib/slug";
+import { requireAdmin } from "@/lib/auth";
 
 type ActionResult<T = undefined> =
   | { ok: true; data: T }
@@ -33,6 +34,8 @@ export type CollectionDraft = {
 export async function createCollectionAction(
   draft: CollectionDraft
 ): Promise<ActionResult<{ slug: string }>> {
+  await requireAdmin();
+
   const slug = slugify(draft.slug || draft.name);
   if (!slug) return { ok: false, error: "Slug is required." };
   if (!draft.name.trim()) return { ok: false, error: "Name is required." };
@@ -61,6 +64,8 @@ export async function updateCollectionAction(
   currentSlug: string,
   draft: Omit<CollectionDraft, "slug">
 ): Promise<ActionResult> {
+  await requireAdmin();
+
   if (!draft.name.trim()) return { ok: false, error: "Name is required." };
   if (!draft.season.trim()) return { ok: false, error: "Season is required." };
 
@@ -80,7 +85,9 @@ export async function updateCollectionAction(
   return { ok: true, data: undefined };
 }
 
-export async function deleteCollectionAction(slug: string): Promise<ActionResult> {  await db.delete(collections).where(eq(collections.slug, slug));
+export async function deleteCollectionAction(slug: string): Promise<ActionResult> {
+  await requireAdmin();
+  await db.delete(collections).where(eq(collections.slug, slug));
   revalidateStorefront(slug);
   return { ok: true, data: undefined };
 }
@@ -102,6 +109,8 @@ export async function createProductAction(
   collectionSlug: string,
   draft: ProductDraft
 ): Promise<ActionResult> {
+  await requireAdmin();
+
   const collection = await db.query.collections.findFirst({
     where: eq(collections.slug, collectionSlug),
   });
@@ -129,6 +138,8 @@ export async function updateProductAction(
   collectionSlug: string,
   draft: ProductDraft
 ): Promise<ActionResult> {
+  await requireAdmin();
+
   if (!draft.name.trim()) return { ok: false, error: "Product name is required." };
   const priceNaira = parseNaira(draft.price);
   if (priceNaira === null) return { ok: false, error: "Enter a valid price." };
@@ -151,7 +162,9 @@ export async function updateProductAction(
 export async function deleteProductAction(
   productId: string,
   collectionSlug: string
-): Promise<ActionResult> {  await db.delete(products).where(eq(products.id, productId));
+): Promise<ActionResult> {
+  await requireAdmin();
+  await db.delete(products).where(eq(products.id, productId));
   revalidateStorefront(collectionSlug);
   return { ok: true, data: undefined };
 }

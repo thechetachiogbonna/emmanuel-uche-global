@@ -6,6 +6,7 @@ import {
   products,
   users,
   orders,
+  orderItems,
 } from "@/lib/db/schema";
 
 function newId(prefix: string) {
@@ -14,6 +15,21 @@ function newId(prefix: string) {
 
 async function main() {
   console.log("Seeding database…");
+
+  // ---- Admin user — the account whose email matches ADMIN_EMAIL becomes
+  // an admin at login time (see lib/session.ts) ----
+  const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@uchefashion.com").toLowerCase();
+  const adminPassword = process.env.ADMIN_SEED_PASSWORD ?? "change-this-password";
+  await db
+    .insert(users)
+    .values({
+      id: newId("admin"),
+      name: "Admin",
+      email: adminEmail,
+      passwordHash: await bcrypt.hash(adminPassword, 12),
+    })
+    .onConflictDoNothing({ target: users.email });
+  console.log(`  ✓ Admin user ready: ${adminEmail}`);
 
   // ---- Collections + products (same content the site shipped with) ----
   const sharedProducts = [
@@ -129,22 +145,63 @@ async function main() {
   console.log(`  ✓ ${sampleCustomers.length} sample customers`);
 
   const sampleOrders = [
-    { customerEmail: "ifeoma.c@example.com", status: "processing" as const, totalNaira: 363000, itemCount: 2 },
-    { customerEmail: "tayo.a@example.com", status: "shipped" as const, totalNaira: 245000, itemCount: 1 },
-    { customerEmail: "chiamaka.o@example.com", status: "delivered" as const, totalNaira: 461000, itemCount: 3 },
+    {
+      customerEmail: "ifeoma.c@example.com",
+      status: "processing" as const,
+      totalNaira: 363000,
+      itemCount: 2,
+      items: [
+        { productName: "Tailored Wrap Dress", priceNaira: 165000, quantity: 1, img1: sharedProducts[0].img1 },
+        { productName: "Sand Linen Trouser", priceNaira: 98000, quantity: 2, img1: sharedProducts[4].img1 },
+      ],
+    },
+    {
+      customerEmail: "tayo.a@example.com",
+      status: "shipped" as const,
+      totalNaira: 245000,
+      itemCount: 1,
+      items: [
+        { productName: "Aso-Oke Blazer", priceNaira: 245000, quantity: 1, img1: sharedProducts[2].img1 },
+      ],
+    },
+    {
+      customerEmail: "chiamaka.o@example.com",
+      status: "delivered" as const,
+      totalNaira: 461000,
+      itemCount: 3,
+      items: [
+        { productName: "Ivory Tailored Set", priceNaira: 210000, quantity: 1, img1: sharedProducts[1].img1 },
+        { productName: "Clay Silk Gown", priceNaira: 251000, quantity: 1, img1: sharedProducts[3].img1 },
+      ],
+    },
   ];
 
   for (const o of sampleOrders) {
-    await db
+    const orderId = newId("ord");
+    const [inserted] = await db
       .insert(orders)
       .values({
-        id: newId("ord"),
+        id: orderId,
         customerId: customerIds[o.customerEmail],
         status: o.status,
         totalNaira: o.totalNaira,
         itemCount: o.itemCount,
       })
-      .onConflictDoNothing();
+      .onConflictDoNothing()
+      .returning({ id: orders.id });
+
+    if (inserted) {
+      await db.insert(orderItems).values(
+        o.items.map((item) => ({
+          id: newId("oi"),
+          orderId,
+          productName: item.productName,
+          priceNaira: item.priceNaira,
+          quantity: item.quantity,
+          img1: item.img1,
+        }))
+      );
+    }
   }
   console.log(`  ✓ ${sampleOrders.length} sample orders`);
 

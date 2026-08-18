@@ -66,6 +66,19 @@ export const orders = pgTable("orders", {
   createdAt: timestamp("created_at").notNull().defaultNow(),
 });
 
+export const orderItems = pgTable("order_items", {
+  id: varchar("id", { length: 30 }).primaryKey(),
+  orderId: varchar("order_id", { length: 30 })
+    .notNull()
+    .references(() => orders.id, { onDelete: "cascade" }),
+  // No FK to products — if a product is later edited or deleted, this
+  // snapshot preserves exactly what the customer actually bought.
+  productName: text("product_name").notNull(),
+  priceNaira: integer("price_naira").notNull(),
+  quantity: integer("quantity").notNull().default(1),
+  img1: text("img1").notNull(),
+});
+
 export const storeSettings = pgTable("store_settings", {
   id: varchar("id", { length: 20 }).primaryKey().default("default"),
   storeName: text("store_name").notNull(),
@@ -99,9 +112,17 @@ export const usersRelations = relations(users, ({ many }) => ({
   orders: many(orders),
 }));
 
-export const ordersRelations = relations(orders, ({ one }) => ({
+export const ordersRelations = relations(orders, ({ one, many }) => ({
   customer: one(users, {
     fields: [orders.customerId],
     references: [users.id],
+  }),
+  items: many(orderItems),
+}));
+
+export const orderItemsRelations = relations(orderItems, ({ one }) => ({
+  order: one(orders, {
+    fields: [orderItems.orderId],
+    references: [orders.id],
   }),
 }));
