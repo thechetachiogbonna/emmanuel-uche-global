@@ -41,6 +41,7 @@ export async function getAdminOrders() {
     .select({
       id: ordersTable.id,
       status: ordersTable.status,
+      paymentStatus: ordersTable.paymentStatus,
       totalNaira: ordersTable.totalNaira,
       itemCount: ordersTable.itemCount,
       createdAt: ordersTable.createdAt,
@@ -59,6 +60,7 @@ export async function getAdminOrders() {
     items: o.itemCount,
     total: formatNaira(o.totalNaira),
     status: o.status,
+    paymentStatus: o.paymentStatus,
   }));
 }
 

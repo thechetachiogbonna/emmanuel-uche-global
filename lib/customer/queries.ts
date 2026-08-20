@@ -17,6 +17,7 @@ export async function getMyOrders(customerId: string) {
   return rows.map((o) => ({
     id: o.id,
     status: o.status,
+    paymentStatus: o.paymentStatus,
     total: formatNaira(o.totalNaira),
     itemCount: o.itemCount,
     date: o.createdAt.toISOString(),
@@ -39,6 +40,7 @@ export async function getMyOrder(customerId: string, orderId: string) {
   return {
     id: row.id,
     status: row.status,
+    paymentStatus: row.paymentStatus,
     total: formatNaira(row.totalNaira),
     itemCount: row.itemCount,
     date: row.createdAt.toISOString(),

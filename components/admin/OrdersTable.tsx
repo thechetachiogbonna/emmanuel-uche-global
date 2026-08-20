@@ -13,6 +13,7 @@ type Order = {
   items: number;
   total: string;
   status: OrderStatus;
+  paymentStatus: "unpaid" | "paid" | "failed";
 };
 
 const STATUSES: OrderStatus[] = [
@@ -54,6 +55,7 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
               <th className="px-4 py-3 font-normal">Date</th>
               <th className="px-4 py-3 font-normal">Items</th>
               <th className="px-4 py-3 font-normal">Total</th>
+              <th className="px-4 py-3 font-normal">Payment</th>
               <th className="px-4 py-3 font-normal">Status</th>
             </tr>
           </thead>
@@ -69,13 +71,26 @@ export default function OrdersTable({ orders }: { orders: Order[] }) {
                 <td className="px-4 py-3">{o.items}</td>
                 <td className="px-4 py-3">{o.total}</td>
                 <td className="px-4 py-3">
+                  <span
+                    className={`text-[12px] tracking-wide uppercase ${
+                      o.paymentStatus === "paid"
+                        ? "text-green-800"
+                        : o.paymentStatus === "failed"
+                          ? "text-red-700"
+                          : "text-clay"
+                    }`}
+                  >
+                    {o.paymentStatus}
+                  </span>
+                </td>
+                <td className="px-4 py-3">
                   <OrderStatusSelect orderId={o.id} status={o.status} />
                 </td>
               </tr>
             ))}
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={6} className="px-4 py-8 text-center text-ink-soft">
+                <td colSpan={7} className="px-4 py-8 text-center text-ink-soft">
                   No orders with this status.
                 </td>
               </tr>

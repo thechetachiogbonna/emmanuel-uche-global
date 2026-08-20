@@ -19,6 +19,8 @@ export async function proxy(request: NextRequest) {
   }
 
   if (request.nextUrl.pathname.startsWith("/admin") && sessionSubjectTypeAndId.type !== "admin") {
+    // A logged-in customer wandering into /admin — send them home rather
+    // than showing a bare "Unauthorized" page.
     return Response.redirect(new URL("/", request.url));
   }
 }

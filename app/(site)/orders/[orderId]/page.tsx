@@ -3,6 +3,7 @@ import { redirect, notFound } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { getMyOrder } from "@/lib/customer/queries";
 import { formatDate } from "@/lib/admin/format";
+import CompletePaymentButton from "@/components/CompletePaymentButton";
 
 export default async function OrderDetailPage({
   params,
@@ -16,13 +17,15 @@ export default async function OrderDetailPage({
   const order = await getMyOrder(user.id, orderId);
   if (!order) notFound();
 
+  const isPaid = order.paymentStatus === "paid";
+
   return (
     <main className="flex-1 px-6 md:px-10 py-16 md:py-24 max-w-2xl mx-auto w-full">
       <p className="text-[12px] tracking-[0.18em] uppercase text-clay mb-3 text-center">
-        Order Confirmed
+        {isPaid ? "Order Confirmed" : "Payment Pending"}
       </p>
       <h1 className="font-display font-light italic text-4xl text-center mb-2">
-        Thank you.
+        {isPaid ? "Thank you." : "Almost there."}
       </h1>
       <p className="text-[14px] text-ink-soft text-center mb-12">
         Order <span className="font-mono">{order.id}</span> placed on{" "}
@@ -51,6 +54,16 @@ export default async function OrderDetailPage({
 
       <div className="border border-ink/10 p-6 mb-10">
         <div className="flex items-center justify-between text-[14px] mb-2">
+          <span className="text-ink-soft">Payment</span>
+          <span
+            className={`tracking-wide uppercase ${
+              isPaid ? "text-green-800" : "text-clay"
+            }`}
+          >
+            {order.paymentStatus}
+          </span>
+        </div>
+        <div className="flex items-center justify-between text-[14px] mb-2">
           <span className="text-ink-soft">Status</span>
           <span className="tracking-wide uppercase">{order.status}</span>
         </div>
@@ -59,6 +72,12 @@ export default async function OrderDetailPage({
           <span>{order.total}</span>
         </div>
       </div>
+
+      {!isPaid && (
+        <div className="mb-10">
+          <CompletePaymentButton orderId={order.id} />
+        </div>
+      )}
 
       <div className="flex gap-3 justify-center">
         <Link

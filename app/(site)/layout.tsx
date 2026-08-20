@@ -2,8 +2,10 @@ import IntroLoader from "@/components/IntroLoader";
 import Footer from "@/components/Footer";
 import Nav from "@/components/Nav";
 import SignupPrompt from "@/components/SignupPrompt";
+import CartDrawer from "@/components/CartDrawer";
 import { getCurrentUser } from "@/lib/auth";
 import { CartProvider } from "@/lib/cart/CartContext";
+import { CartDrawerProvider } from "@/lib/cart/CartDrawerContext";
 
 export default async function SiteLayout({
   children,
@@ -15,10 +17,13 @@ export default async function SiteLayout({
 
   return (
     <CartProvider>
-      <Nav session={session} />
-      <IntroLoader>{children}</IntroLoader>
-      <Footer />
-      <SignupPrompt session={session} />
+      <CartDrawerProvider>
+        <Nav session={session} />
+        <IntroLoader>{children}</IntroLoader>
+        <Footer />
+        <SignupPrompt session={session} />
+        <CartDrawer />
+      </CartDrawerProvider>
     </CartProvider>
   );
 }

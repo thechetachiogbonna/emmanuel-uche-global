@@ -97,7 +97,7 @@ export default function CartPage() {
             </p>
             <Link
               href="/checkout"
-              className="block text-center bg-ink text-ivory text-[12px] tracking-[0.14em] uppercase py-3.5 hover:bg-clay transition-colors"
+              className="block w-full text-center bg-ink text-ivory text-[12px] tracking-[0.14em] uppercase py-3.5 hover:bg-clay transition-colors"
             >
               Proceed to Checkout
             </Link>

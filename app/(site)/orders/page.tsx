@@ -46,6 +46,13 @@ export default async function MyOrdersPage() {
                 </div>
               </div>
               <div className="flex items-center gap-4">
+                <span
+                  className={`text-[12px] tracking-wide uppercase ${
+                    o.paymentStatus === "paid" ? "text-green-800" : "text-clay"
+                  }`}
+                >
+                  {o.paymentStatus}
+                </span>
                 <span className="text-[13px] tracking-wide uppercase text-ink-soft">
                   {o.status}
                 </span>

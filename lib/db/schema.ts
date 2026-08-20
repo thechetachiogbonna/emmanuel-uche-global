@@ -21,6 +21,12 @@ export const orderStatusEnum = pgEnum("order_status", [
   "cancelled",
 ]);
 
+export const paymentStatusEnum = pgEnum("payment_status", [
+  "unpaid",
+  "paid",
+  "failed",
+]);
+
 export const collections = pgTable("collections", {
   id: varchar("id", { length: 30 }).primaryKey(),
   slug: varchar("slug", { length: 120 }).notNull().unique(),
@@ -61,6 +67,11 @@ export const orders = pgTable("orders", {
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   status: orderStatusEnum("status").notNull().default("pending"),
+  paymentStatus: paymentStatusEnum("payment_status").notNull().default("unpaid"),
+  // The reference sent to Paystack for the most recent payment attempt.
+  // Regenerated on each retry, so it's how we match an inbound webhook
+  // or callback back to this order.
+  paymentReference: varchar("payment_reference", { length: 100 }).unique(),
   totalNaira: integer("total_naira").notNull(),
   itemCount: integer("item_count").notNull().default(1),
   createdAt: timestamp("created_at").notNull().defaultNow(),

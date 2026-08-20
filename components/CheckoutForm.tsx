@@ -30,6 +30,16 @@ export default function CheckoutForm({ customerName }: { customerName: string })
     }
 
     clear();
+
+    if (result.authorizationUrl) {
+      // Full navigation — this is Paystack's own hosted checkout domain,
+      // not a route in this app.
+      window.location.href = result.authorizationUrl;
+      return;
+    }
+
+    // Order was created but Paystack init failed (e.g. misconfigured
+    // keys) — land on the order page, which offers a retry.
     router.push(`/orders/${result.orderId}`);
   };
 
@@ -85,9 +95,8 @@ export default function CheckoutForm({ customerName }: { customerName: string })
           </div>
 
           <p className="text-[12px] text-ink-soft mt-6 bg-sand/30 border border-ink/10 px-4 py-3">
-            This is a demo checkout — placing an order creates a real record
-            in the store&apos;s database, but no payment is actually
-            processed. There&apos;s no payment gateway wired in yet.
+            You&apos;ll be taken to Paystack&apos;s secure checkout to
+            complete payment. Your card details are never seen by this site.
           </p>
         </div>
 

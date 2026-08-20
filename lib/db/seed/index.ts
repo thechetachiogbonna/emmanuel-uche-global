@@ -184,6 +184,7 @@ async function main() {
         id: orderId,
         customerId: customerIds[o.customerEmail],
         status: o.status,
+        paymentStatus: "paid",
         totalNaira: o.totalNaira,
         itemCount: o.itemCount,
       })
