@@ -5,7 +5,7 @@ export default async function Footer() {
   const settings = await getStoreSettings();
 
   return (
-    <footer className="px-6 md:px-10 pt-20 pb-10 border-t border-ink/10 bg-ivory text-ink">
+    <footer className="px-6 md:px-10 pt-20 pb-10 border-t border-ink/10 bg-sand/30 text-ink">
       <div className="grid md:grid-cols-12 gap-10 pb-16">
         <div className="md:col-span-4">
           <div className="font-display italic text-3xl mb-5">Uche</div>
