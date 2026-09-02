@@ -56,7 +56,7 @@ export default function MadeToOrder() {
                   Studio Crafted
                 </h3>
                 <p className="text-[14px] leading-relaxed text-ink-soft max-w-md">
-                  Each garment is individually hand-cut and custom tailored in our Aba studio over 3 to 4 weeks.
+                  Each garment is individually hand-cut and custom tailored in our Aba studio within 1 to 2 weeks.
                 </p>
               </div>
             </div>
@@ -66,7 +66,7 @@ export default function MadeToOrder() {
             href="/contact"
             className="inline-block px-8 py-4 bg-ink text-ivory text-[12px] tracking-[0.14em] uppercase hover:bg-clay transition-colors"
           >
-            Start Custom Order
+            Chat Us On WhatsApp
           </Link>
         </div>
 

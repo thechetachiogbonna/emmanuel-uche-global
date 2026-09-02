@@ -84,11 +84,7 @@ export default async function Footer() {
         <span>
           © 2026 {settings.storeName} — {settings.studioLocation}
         </span>
-        <div className="flex gap-6">
-          <a href="#" className="hover:text-ink transition-colors">Instagram</a>
-          <a href="#" className="hover:text-ink transition-colors">TikTok</a>
-          <a href="#" className="hover:text-ink transition-colors">Pinterest</a>
-        </div>
+        <div />
       </div>
     </footer>
   );
