@@ -1,31 +1,20 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useCart } from "@/lib/cart/CartContext";
 import { useCartDrawer } from "@/lib/cart/CartDrawerContext";
+import type { Product } from "@/lib/data";
 
 function formatNaira(amount: number) {
   return `\u20A6${amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-const RECOMMENDATIONS = [
-  {
-    id: "rec_kofi_earrings",
-    name: "KOFI EARRINGS",
-    price: 167200,
-    img1: "https://cdn.shopify.com/s/files/1/0393/2741/files/ANDREAIYAMAHKOFI_400x400.jpg?v=1776441151",
-  },
-  {
-    id: "rec_nali_robe",
-    name: "NALI ROBE - DANDI PRINT",
-    price: 363300,
-    img1: "https://cdn.shopify.com/s/files/1/0393/2741/files/ANDREAIYAMAH-SS25-ECOMMERCE-KUWABIKINI_NALIORGANZAROBEDANDIPRINT-SWIM-ONFIGURE-FRONT2_400x400.jpg?v=1760465432",
-  },
-];
-
-export default function CartDrawer() {
+export default function CartDrawer({
+  recommendations = [],
+}: {
+  recommendations?: Product[];
+}) {
   const router = useRouter();
   const { open, closeCart } = useCartDrawer();
   const { items, addItem, updateQuantity, removeItem, subtotalNaira } = useCart();
@@ -164,43 +153,46 @@ export default function CartDrawer() {
           )}
 
           {/* Recommendations ("YOU MAY ALSO LIKE") */}
-          <div className="bg-[#F8F8F8] px-6 py-6 border-t border-gray-100">
-            <h4 className="text-[12px] font-medium tracking-[0.1em] text-center text-gray-600 uppercase mb-5">
-              YOU MAY ALSO LIKE
-            </h4>
-            <div className="space-y-4">
-              {RECOMMENDATIONS.map((rec) => (
-                <div key={rec.id} className="flex items-center gap-4">
-                  <img
-                    src={rec.img1}
-                    alt={rec.name}
-                    className="w-16 h-20 object-cover bg-white shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h5 className="text-[12px] font-medium text-gray-700 tracking-wide uppercase truncate">
-                      {rec.name}
-                    </h5>
-                    <p className="text-[12px] text-gray-500 mt-0.5">
-                      {formatNaira(rec.price)}
-                    </p>
+          {recommendations.length > 0 && (
+            <div className="bg-[#F8F8F8] px-6 py-6 border-t border-gray-100">
+              <h4 className="text-[12px] font-medium tracking-[0.1em] text-center text-gray-600 uppercase mb-5">
+                YOU MAY ALSO LIKE
+              </h4>
+              <div className="space-y-4">
+                {recommendations.map((product) => (
+                  <div key={product.id} className="flex items-center gap-4">
+                    {/* eslint-disable-next-line @next/next/no-img-element -- product images are arbitrary external URLs */}
+                    <img
+                      src={product.img1}
+                      alt={product.name}
+                      className="w-16 h-20 object-cover bg-white shrink-0"
+                    />
+                    <div className="flex-1 min-w-0">
+                      <h5 className="text-[12px] font-medium text-gray-700 tracking-wide uppercase truncate">
+                        {product.name}
+                      </h5>
+                      <p className="text-[12px] text-gray-500 mt-0.5">
+                        {product.price}
+                      </p>
+                    </div>
+                    <button
+                      onClick={() =>
+                        addItem({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          img1: product.img1,
+                        })
+                      }
+                      className="bg-black text-white text-[11px] font-normal px-4 py-2.5 hover:bg-gray-800 transition-colors shrink-0"
+                    >
+                      Add to bag
+                    </button>
                   </div>
-                  <button
-                    onClick={() =>
-                      addItem({
-                        id: rec.id,
-                        name: rec.name,
-                        price: `₦${rec.price.toLocaleString()}`,
-                        img1: rec.img1,
-                      })
-                    }
-                    className="bg-black text-white text-[11px] font-normal px-4 py-2.5 hover:bg-gray-800 transition-colors shrink-0"
-                  >
-                    Add to bag
-                  </button>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
         {/* Footer Area */}

@@ -1,4 +1,4 @@
-# Uche Fashion International
+# Emmanuel Uche Global
 
 ## Setup
 

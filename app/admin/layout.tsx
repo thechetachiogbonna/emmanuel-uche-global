@@ -3,7 +3,7 @@ import AdminShell from "@/components/admin/AdminShell";
 import { requireAdmin } from "@/lib/auth";
 
 export const metadata = {
-  title: "Admin — Uche Fashion International",
+  title: "Admin — Emmanuel Uche Global",
   robots: { index: false, follow: false },
 };
 

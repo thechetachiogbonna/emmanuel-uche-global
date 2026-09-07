@@ -24,7 +24,7 @@ type CartContextValue = {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
-const STORAGE_KEY = "uche_cart";
+const STORAGE_KEY = "eug_cart";
 
 function parseNaira(price: string): number {
   const digits = price.replace(/[^\d]/g, "");

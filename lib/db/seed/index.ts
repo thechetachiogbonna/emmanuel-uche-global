@@ -18,7 +18,7 @@ async function main() {
 
   // ---- Admin user — the account whose email matches ADMIN_EMAIL becomes
   // an admin at login time (see lib/session.ts) ----
-  const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@uchefashion.com").toLowerCase();
+  const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@emmanueluche.com").toLowerCase();
   const adminPassword = process.env.ADMIN_SEED_PASSWORD ?? "change-this-password";
   await db
     .insert(users)
