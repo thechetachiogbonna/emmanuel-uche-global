@@ -8,6 +8,13 @@
       "when": 1788714748781,
       "tag": "0000_even_lady_mastermind",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1789109494266,
+      "tag": "0001_closed_junta",
+      "breakpoints": true
     }
   ]
 }
