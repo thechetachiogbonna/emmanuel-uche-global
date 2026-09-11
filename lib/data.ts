@@ -107,22 +107,3 @@ export async function getProductsByIds(ids: string[]) {
     img1: p.img1,
   }));
 }
-
-/**
- * A handful of real products drawn from the store's own catalog, for use
- * in "you may also like"-style prompts. Deliberately NOT hardcoded data —
- * anything shown here must be a product this store actually sells.
- */
-export async function getFeaturedProducts(limit = 2): Promise<Product[]> {
-  const rows = await db.query.products.findMany({
-    limit,
-    orderBy: (p, { desc }) => [desc(p.createdAt)],
-  });
-  return rows.map((p) => ({
-    id: p.id,
-    name: p.name,
-    price: formatNaira(p.priceNaira),
-    img1: p.img1,
-    img2: p.img2,
-  }));
-}

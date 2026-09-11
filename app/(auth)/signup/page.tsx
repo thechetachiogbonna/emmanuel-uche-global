@@ -36,7 +36,7 @@ function SignupForm() {
   return (
     <div className="w-full max-w-sm bg-white py-10 px-8 rounded-lg shadow-lg">
       <p className="text-[12px] tracking-[0.18em] uppercase text-clay mb-4 text-center">
-        Emmanuel Uche Global
+        Uche Fashion International
       </p>
       <h1 className="font-display font-light italic text-4xl text-center mb-3">
         Create an account

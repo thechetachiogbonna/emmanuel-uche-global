@@ -5,9 +5,9 @@ import ContactSection from "@/components/ContactSection";
 import { getStoreSettings } from "@/lib/admin/queries";
 
 export const metadata: Metadata = {
-  title: "Contact — Emmanuel Uche Global",
+  title: "Contact — Uche Fashion International",
   description:
-    "Get in touch with Emmanuel Uche Global for orders, made-to-order enquiries, and stockist partnerships.",
+    "Get in touch with Uche Fashion International for orders, made-to-order enquiries, and stockist partnerships.",
 };
 
 export default async function ContactPage() {
@@ -28,7 +28,7 @@ export default async function ContactPage() {
         primaryCta={{ label: "Send a Message", href: "#contact-form" }}
         secondaryCta={{ label: "Back to Home", href: "/" }}
         image="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=1600&q=80"
-        imageAlt="Emmanuel Uche Global studio in Aba"
+        imageAlt="Uche Fashion International studio in Aba"
       />
       <Marquee />
       <ContactSection

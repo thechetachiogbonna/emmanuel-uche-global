@@ -5,7 +5,7 @@ export default function Story() {
         <div className="md:col-span-5 aspect-4/5 overflow-hidden">
           <img
             src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=900&q=80"
-            alt="Emmanuel Uche Global studio in Aba"
+            alt="Uche Fashion International studio in Aba"
             className="w-full h-full object-cover"
           />
         </div>
@@ -18,7 +18,7 @@ export default function Story() {
             <br className="hidden md:block" /> not a sketch.
           </h2>
           <p className="text-[15px] leading-relaxed text-ink-soft max-w-md mb-4">
-            Emmanuel Uche Global selects and cuts every fabric directly in our
+            Uche Fashion International selects and cuts every fabric directly in our
             Aba studio. The fabric dictates the silhouette — not the other way around.
           </p>
           <p className="text-[15px] leading-relaxed text-ink-soft max-w-md mb-8">

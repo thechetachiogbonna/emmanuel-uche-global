@@ -8,7 +8,7 @@ export default async function Footer() {
     <footer className="px-6 md:px-10 pt-20 pb-10 border-t border-ink/10 bg-sand/30 text-ink">
       <div className="grid md:grid-cols-12 gap-10 pb-16">
         <div className="md:col-span-4">
-          <div className="font-display italic text-3xl mb-5">Emmanuel Uche</div>
+          <div className="font-display italic text-3xl mb-5">Uche</div>
           <p className="text-[14px] leading-relaxed text-ink-soft max-w-xs">
             Ready-to-wear and made-to-order pieces, hand-finished in{" "}
             {settings.studioLocation}. Rooted in Nigerian craft, made for

@@ -1,4 +1,4 @@
-# Emmanuel Uche Global
+# Uche Fashion International
 
 ## Setup
 
@@ -16,8 +16,8 @@
    cp .env.example .env
    ```
    - `DATABASE_URL` — your Postgres connection string
-   - `SESSION_SECRET` — generate one with `openssl rand -base64 32`
-   - `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD` — your first admin login, used only by the seed script
+   - `BETTER_AUTH_SECRET` — generate one with `openssl rand -base64 32`
+   - `ADMIN_EMAIL` / `ADMIN_SEED_PASSWORD` — your first admin login, used only by the seed script
 
 4. Run migrations, then seed:
    ```bash
@@ -31,7 +31,7 @@
    npm run dev
    ```
 
-6. Log into the admin console at `/admin/login` with the email/password you set in `ADMIN_SEED_EMAIL` / `ADMIN_SEED_PASSWORD`.
+6. Log in at `/login` with the email/password you set in `ADMIN_EMAIL` / `ADMIN_SEED_PASSWORD`, then visit `/admin` — that account is seeded with the "admin" role, so it'll load the console instead of bouncing you home.
 
 ## Database commands
 
@@ -43,5 +43,5 @@
 ## Stack notes
 
 - **ORM**: [Drizzle](https://orm.drizzle.team), not Prisma — Prisma's engine binaries need network access this environment didn't have during development, so this was built and verified against Drizzle instead. Functionally equivalent for this project's needs.
-- **Auth**: real bcrypt password hashing (`bcryptjs`) and DB-backed session tokens in httpOnly cookies (`lib/session.ts`) — no more localStorage.
-- **Admin mutations**: Next.js Server Actions (`lib/actions/`), each re-checking the admin session server-side via `requireAdmin()` — the UI hiding buttons is not what protects these.
+- **Auth**: [Better Auth](https://www.better-auth.com) — real password hashing and session management handled by the library itself (not hand-rolled), backed by Postgres via its Drizzle adapter. There's no single `/login` split between customers and admins — anyone can sign up at `/login` or `/signup`, and the one account seeded with `role: "admin"` (via the `admin` plugin) is what unlocks `/admin`. `proxy.ts` gates `/admin/*` at the network level; `requireAdmin()` in `lib/auth.ts` re-checks the same thing inside every admin Server Action, since those are technically independent endpoints.
+- **Admin mutations**: Next.js Server Actions (`lib/actions/`), each calling `requireAdmin()` — the UI hiding buttons is not what protects these.

@@ -36,7 +36,7 @@ export default function AdminShell({
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-ink/10 bg-white">
         <div className="px-6 py-6 border-b border-ink/10">
           <div className="font-display italic text-2xl leading-none">
-            Emmanuel Uche
+            Uche
           </div>
           <div className="text-[10px] tracking-[0.18em] uppercase text-ink-soft mt-1">
             Admin Console
@@ -80,7 +80,7 @@ export default function AdminShell({
       </aside>
 
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-ink/10 flex items-center justify-between px-4 py-3">
-        <div className="font-display italic text-xl">Emmanuel Uche Admin</div>
+        <div className="font-display italic text-xl">Uche Admin</div>
         <button onClick={logout} className="text-[12px] text-ink-soft">
           Log Out
         </button>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 
-const SESSION_FLAG = "eug_signup_prompt_shown";
+const SESSION_FLAG = "uche_signup_prompt_shown";
 const SKIP_PATHS = ["/login", "/signup"];
 
 type Session = { name: string; email: string } | null;
@@ -89,7 +89,7 @@ export default function SignupPrompt({ session }: { session: Session }) {
         </button>
 
         <p className="text-[11px] tracking-[0.18em] uppercase text-clay mb-3">
-          Emmanuel Uche Global
+          Uche Fashion International
         </p>
         <h2 className="font-display font-light italic text-3xl mb-3 leading-tight">
           Don&apos;t miss the next drop

@@ -1,93 +1,55 @@
 import "server-only";
-import bcrypt from "bcryptjs";
-import { eq } from "drizzle-orm";
+import { headers } from "next/headers";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
+import { admin } from "better-auth/plugins";
+import { nextCookies } from "better-auth/next-js";
 import { db } from "@/lib/db";
-import { users } from "@/lib/db/schema";
-import { createSession, destroySession, getSessionSubjectTypeAndId } from "@/lib/session";
+import * as schema from "@/lib/db/schema";
 
-const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+export const auth = betterAuth({
+  database: drizzleAdapter(db, {
+    provider: "pg",
+    schema,
+    usePlural: true,
+  }),
+  secret: process.env.BETTER_AUTH_SECRET,
+  baseURL: process.env.NEXT_PUBLIC_APP_URL,
+  emailAndPassword: {
+    enabled: true,
+    minPasswordLength: 8,
+  },
+  session: {
+    expiresIn: 60 * 60 * 24 * 30, // 30 days, matches the old customer session TTL
+  },
+  plugins: [
+    admin({ defaultRole: "user" }),
+    // Must be last — handles cookie writes correctly from Server Actions.
+    nextCookies(),
+  ],
+});
 
-export type CustomerResult = { ok: true } | { ok: false; error: string };
+export type Session = typeof auth.$Infer.Session;
 
-export async function signup(
-  name: string,
-  email: string,
-  password: string
-): Promise<CustomerResult> {
-  const normalizedEmail = email.trim().toLowerCase();
-  if (!name.trim()) return { ok: false, error: "Enter your name." };
-  if (!EMAIL_RE.test(normalizedEmail)) {
-    return { ok: false, error: "Enter a valid email address." };
-  }
-  if (password.length < 8) {
-    return { ok: false, error: "Password must be at least 8 characters." };
-  }
-
-  const existing = await db.query.users.findFirst({
-    where: eq(users.email, normalizedEmail),
-  });
-  if (existing) {
-    return { ok: false, error: "An account with this email already exists." };
-  }
-
-  const passwordHash = await bcrypt.hash(password, 12);
-  const prefix = normalizedEmail === process.env.ADMIN_EMAIL ? "admin" : "cust";
-  const id = `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
-
-  await db.insert(users).values({
-    id,
-    name: name.trim(),
-    email: normalizedEmail,
-    passwordHash,
-  });
-
-  await createSession(normalizedEmail, id);
-  return { ok: true };
-}
-
-export async function login(
-  email: string,
-  password: string
-): Promise<CustomerResult> {
-  const normalizedEmail = email.trim().toLowerCase();
-  const account = await db.query.users.findFirst({
-    where: eq(users.email, normalizedEmail),
-  });
-
-  if (!account || !(await bcrypt.compare(password, account.passwordHash))) {
-    return { ok: false, error: "Incorrect email or password." };
-  }
-
-  await createSession(normalizedEmail, account.id);
-  return { ok: true };
-}
-
-export async function logout() {
-  await destroySession();
-}
-
+/**
+ * Preserves the same shape/signature the rest of the app already relies
+ * on (14 call sites), so migrating the auth backend didn't require
+ * touching every page that reads the current user.
+ */
 export async function getCurrentUser() {
-  const sessionSubjectTypeAndId = await getSessionSubjectTypeAndId();
-  if (!sessionSubjectTypeAndId) return null;
-
-  const account = await db.query.users.findFirst({
-    where: eq(users.id, sessionSubjectTypeAndId.id),
-    columns: { id: true, name: true, email: true },
-  });
-  return account ?? null;
+  const session = await auth.api.getSession({ headers: await headers() });
+  return session?.user ?? null;
 }
 
 /**
- * Every admin Server Action should call this first. proxy.ts already
- * blocks unauthenticated/non-admin requests to /admin/* at the network
- * level, but Server Actions are still technically-independent endpoints —
- * this is the defense-in-depth check inside the action itself, so
- * authorization doesn't rely on routing alone.
+ * Every admin Server Action calls this first. proxy.ts already blocks
+ * non-admin requests to /admin/* at the network level, but Server Actions
+ * are still technically independent endpoints — this is the
+ * defense-in-depth check inside the action itself.
  */
 export async function requireAdmin() {
   const user = await getCurrentUser();
-  const subject = await getSessionSubjectTypeAndId();
-  if (!user || subject?.type !== "admin") {
+  if (!user || user.role !== "admin") {
     throw new Error("Unauthorized — admin session required.");
   }
   return user;

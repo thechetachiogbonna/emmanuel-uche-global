@@ -112,7 +112,7 @@ export const SEED_CUSTOMERS: Customer[] = [
 
 // Matches ContactSection.tsx's current hardcoded details.
 export const DEFAULT_SETTINGS: StoreSettings = {
-  storeName: "Emmanuel Uche Global",
+  storeName: "Uche Fashion International",
   studioLocation: "Aba, Nigeria",
   supportEmail: "hello@uchefashion.com",
   supportPhone: "+234 801 234 5678",

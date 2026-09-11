@@ -1,24 +1,17 @@
 import { NextRequest } from "next/server";
-import { getSessionSubjectTypeAndId } from "./lib/session";
+import { auth } from "./lib/auth";
 
 export async function proxy(request: NextRequest) {
-  const sessionCookie = request.cookies.get("session");
-  const sessionToken = sessionCookie?.value;
+  const session = await auth.api.getSession({ headers: request.headers });
 
   const redirectUrl = new URL("/login", request.url);
   redirectUrl.searchParams.set("redirect", request.nextUrl.pathname);
 
-  if (!sessionToken) {
+  if (!session) {
     return Response.redirect(redirectUrl);
   }
 
-  const sessionSubjectTypeAndId = await getSessionSubjectTypeAndId();
-
-  if (!sessionSubjectTypeAndId) {
-    return Response.redirect(redirectUrl);
-  }
-
-  if (request.nextUrl.pathname.startsWith("/admin") && sessionSubjectTypeAndId.type !== "admin") {
+  if (request.nextUrl.pathname.startsWith("/admin") && session.user.role !== "admin") {
     // A logged-in customer wandering into /admin — send them home rather
     // than showing a bare "Unauthorized" page.
     return Response.redirect(new URL("/", request.url));

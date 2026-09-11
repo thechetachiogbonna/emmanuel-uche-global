@@ -1,5 +1,7 @@
 import "dotenv/config";
-import bcrypt from "bcryptjs";
+import { eq } from "drizzle-orm";
+import { betterAuth } from "better-auth";
+import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { db } from "@/lib/db";
 import {
   collections,
@@ -8,27 +10,48 @@ import {
   orders,
   orderItems,
 } from "@/lib/db/schema";
+import * as schema from "@/lib/db/schema";
 
 function newId(prefix: string) {
   return `${prefix}_${Date.now().toString(36)}${Math.random().toString(36).slice(2, 8)}`;
 }
 
+// A standalone auth instance for seeding only — the real lib/auth.ts is
+// guarded with `import "server-only"` (correctly — it should never end
+// up in a client bundle), which unconditionally throws outside Next.js's
+// server-aware build pipeline. This plain script runs via tsx directly,
+// so it needs its own minimal, unguarded instance instead.
+const seedAuth = betterAuth({
+  database: drizzleAdapter(db, { provider: "pg", schema, usePlural: true }),
+  secret: process.env.BETTER_AUTH_SECRET,
+  emailAndPassword: { enabled: true, minPasswordLength: 8 },
+});
+
 async function main() {
   console.log("Seeding database…");
 
-  // ---- Admin user — the account whose email matches ADMIN_EMAIL becomes
-  // an admin at login time (see lib/session.ts) ----
+  // ---- Admin user — created through Better Auth's own signup flow (so
+  // password hashing is whatever Better Auth actually uses internally,
+  // not something we have to replicate), then promoted to the "admin"
+  // role via the admin plugin. proxy.ts and requireAdmin() both check
+  // this role, not an email match. ----
   const adminEmail = (process.env.ADMIN_EMAIL ?? "admin@emmanueluche.com").toLowerCase();
   const adminPassword = process.env.ADMIN_SEED_PASSWORD ?? "change-this-password";
+
+  const existingAdmin = await db.query.users.findFirst({
+    where: eq(users.email, adminEmail),
+  });
+
+  if (!existingAdmin) {
+    await seedAuth.api.signUpEmail({
+      body: { name: "Admin", email: adminEmail, password: adminPassword },
+    });
+  }
+
   await db
-    .insert(users)
-    .values({
-      id: newId("admin"),
-      name: "Admin",
-      email: adminEmail,
-      passwordHash: await bcrypt.hash(adminPassword, 12),
-    })
-    .onConflictDoNothing({ target: users.email });
+    .update(users)
+    .set({ role: "admin" })
+    .where(eq(users.email, adminEmail));
   console.log(`  ✓ Admin user ready: ${adminEmail}`);
 
   // ---- Collections + products (same content the site shipped with) ----
@@ -120,7 +143,6 @@ async function main() {
     { name: "Chiamaka Obi", email: "chiamaka.o@example.com" },
   ];
   const customerIds: Record<string, string> = {};
-  const demoHash = await bcrypt.hash("demo-password-not-real", 12);
 
   for (const c of sampleCustomers) {
     const [row] = await db
@@ -129,7 +151,6 @@ async function main() {
         id: newId("user"),
         name: c.name,
         email: c.email,
-        passwordHash: demoHash,
       })
       .onConflictDoNothing({ target: users.email })
       .returning({ id: users.id });

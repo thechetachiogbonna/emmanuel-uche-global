@@ -2,11 +2,11 @@
 
 import { useEffect, useMemo, useRef, useState } from "react";
 
-const NAME = "Emmanuel Uche";
-const SUBTITLE = "GLOBAL";
+const NAME = "Uche";
+const SUBTITLE = "FASHION INTERNATIONAL";
 
-/** Per-letter typing delays (ms) — gives "Emmanuel Uche" a hand-typed rhythm */
-const NAME_DELAYS = [150, 105, 90, 95, 85, 90, 100, 130, 90, 140, 100, 85, 120];
+/** Per-letter typing delays (ms) — gives "Uche" a hand-typed rhythm */
+const NAME_DELAYS = [150, 110, 90, 130];
 const SUBTITLE_BASE = 55;
 const subtitleDelay = (i: number) =>
   SUBTITLE_BASE + (i % 4 === 0 ? 25 : i % 3 === 0 ? -10 : 0);

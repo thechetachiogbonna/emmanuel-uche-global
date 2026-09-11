@@ -95,9 +95,9 @@ export async function getStoreSettings() {
   return (
     row ?? {
       id: "default",
-      storeName: "Emmanuel Uche Global",
+      storeName: "Uche Fashion International",
       studioLocation: "Aba, Nigeria",
-      supportEmail: "hello@emmanueluche.com",
+      supportEmail: "hello@uchefashion.com",
       supportPhone: "+234 801 234 5678",
       hours: "Mon–Fri, 9am–6pm WAT",
       updatedAt: new Date(),

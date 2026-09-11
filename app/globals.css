@@ -1,8 +1,8 @@
 @import "tailwindcss";
 
 @theme {
-  --font-display: var(--font-cormorant), "Cormorant Garamond", serif;
-  --font-body: var(--font-montserrat), "Montserrat", sans-serif;
+  --font-display: "Fraunces", serif;
+  --font-body: "Inter", sans-serif;
 
   --color-ivory: #F6F1E9;
   --color-sand: #DCD0BC;
