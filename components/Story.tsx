@@ -4,7 +4,7 @@ export default function Story() {
       <div className="grid md:grid-cols-12 gap-10 md:gap-16 items-center">
         <div className="md:col-span-5 aspect-4/5 overflow-hidden">
           <img
-            src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=900&q=80"
+            src="/images/IMG-20260922-WA0015.jpg"
             alt="Uche Fashion International studio in Aba"
             className="w-full h-full object-cover"
           />
