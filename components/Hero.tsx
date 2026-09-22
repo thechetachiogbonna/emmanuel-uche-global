@@ -14,6 +14,10 @@ export default function Hero() {
       description="Hand-finished in our Aba studio from fabrics chosen for how they move, not just how they look — ready-to-wear and made-to-order pieces built for wherever the day takes you."
       primaryCta={{ label: "Shop Collection", href: "/collections" }}
       secondaryCta={{ label: "Our Story", href: "/#story" }}
+      videos={[
+        "/videos/VID-20260922-WA0016.mp4",
+        "/videos/VID-20260922-WA0017.mp4",
+      ]}
       image="https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=1600&q=80"
       imageAlt="Uche Fashion International SS26 campaign"
     />

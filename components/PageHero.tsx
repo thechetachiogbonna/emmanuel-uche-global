@@ -8,6 +8,7 @@ type PageHeroProps = {
   secondaryCta?: { label: string; href: string };
   image?: string;
   imageAlt?: string;
+  videos?: string[];
 };
 
 export default function PageHero({
@@ -18,7 +19,9 @@ export default function PageHero({
   secondaryCta,
   image,
   imageAlt,
+  videos,
 }: PageHeroProps) {
+  const heroVideos = videos?.length ? videos : [];
   return (
     <section className="relative overflow-hidden px-6 md:px-10 pt-10 md:pt-16 pb-16">
       <span className="watermark-u absolute -top-6 -left-4 md:-top-8 md:-left-8 text-[22vw] md:text-[18rem] leading-none whitespace-nowrap select-none">
@@ -66,13 +69,29 @@ export default function PageHero({
         )}
       </div>
 
-      {image && (
-        <div className="relative mt-12 md:mt-16 aspect-[16/8] md:aspect-[16/7] overflow-hidden bg-sand">
-          <img
-            src={image}
-            alt={imageAlt ?? ""}
-            className="w-full h-full object-cover"
-          />
+      {(image || heroVideos.length > 0) && (
+        <div className={`relative mt-12 md:mt-16 overflow-hidden ${heroVideos.length > 0 ? "grid grid-cols-2 bg-sand" : "aspect-16/8 md:aspect-16/7 bg-sand"}`}>
+          {heroVideos.length > 0 ? (
+            heroVideos.map((source, index) => (
+              <video
+                key={source}
+                className="block aspect-9/16 w-full object-cover"
+                autoPlay
+                muted
+                loop
+                playsInline
+                aria-label={`${imageAlt ?? "Uche Fashion International campaign"} ${index + 1}`}
+              >
+                <source src={source} type="video/mp4" />
+              </video>
+            ))
+          ) : (
+            <img
+              src={image}
+              alt={imageAlt ?? ""}
+              className="h-full w-full object-cover"
+            />
+          )}
         </div>
       )}
     </section>
