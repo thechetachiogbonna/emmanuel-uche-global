@@ -10,10 +10,10 @@ export default function ProductRail({ products }: { products: Product[] }) {
       <div className="mb-8 flex items-end justify-between border-b border-ink/10 pb-5">
         <div>
           <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-clay">
-            Back in Stock
+            Shop In
           </p>
           <h2 className="font-display text-3xl font-light uppercase tracking-[0.04em] md:text-4xl">
-            The Icons
+            Collections
           </h2>
         </div>
         <Link
