@@ -20,7 +20,7 @@ export default function ProductRail({ products }: { products: Product[] }) {
           href="/collections"
           className="text-[11px] uppercase tracking-[0.14em] underline-draw group"
         >
-          <span className="underline-draw">Shop</span>
+          <span className="underline underline-draw">Shop</span>
         </Link>
       </div>
 

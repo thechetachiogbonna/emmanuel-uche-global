@@ -11,8 +11,8 @@ export default function ProductCard({
   className?: string;
 }) {
   const media: MediaItem[] = [
-    { src: product.img1, type: "image", alt: product.name },
-    { src: product.img2, type: "image", alt: `${product.name} alternate view` },
+    { src: product.img1, type: "image" as const, alt: product.name },
+    { src: product.img2, type: "image" as const, alt: `${product.name} alternate view` },
   ].filter((item) => item.src);
 
   return (
