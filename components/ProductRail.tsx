@@ -7,12 +7,12 @@ import type { Product } from "@/lib/data";
 export default function ProductRail({ products }: { products: Product[] }) {
   return (
     <section id="shop" className="px-6 py-10 md:px-10 md:py-12">
-      <div className="mb-8 flex items-end justify-between border-b border-ink/10 pb-5">
+      <div className="mb-8 flex items-end justify-between">
         <div>
-          <p className="mb-2 text-[11px] uppercase tracking-[0.18em] text-clay">
+          <p className="mb-2 text-xs uppercase tracking-[0.18em] text-clay">
             Shop In
           </p>
-          <h2 className="font-display text-3xl font-light uppercase tracking-[0.04em] md:text-4xl">
+          <h2 className="font-display text-4xl font-light italic md:text-5xl">
             Collections
           </h2>
         </div>

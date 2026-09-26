@@ -18,7 +18,7 @@ export default function Story() {
             <br className="hidden md:block" /> not a sketch.
           </h2>
           <p className="text-[15px] leading-relaxed text-ink-soft max-w-md mb-4">
-            Uche Fashion International selects and cuts every fabric directly in our
+            Emmanuel Uche Global selects and cuts every fabric directly in our
             Aba studio. The fabric dictates the silhouette — not the other way around.
           </p>
           <p className="text-[15px] leading-relaxed text-ink-soft max-w-md mb-8">

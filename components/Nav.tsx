@@ -39,7 +39,7 @@ export default function Nav({ session }: { session: Session }) {
             href="/"
             className="font-display italic text-2xl md:text-3xl tracking-tight"
           >
-            Uche
+            Emmanuel Uche
           </Link>
 
           <nav className="hidden md:flex items-center gap-10">
