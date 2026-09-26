@@ -22,7 +22,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 
   return {
-    title: `${collection.name} — Uche Fashion International`,
+    title: `${collection.name} — Emmanuel Uche Global`,
     description: collection.description,
   };
 }

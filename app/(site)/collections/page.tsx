@@ -5,9 +5,9 @@ import CollectionsGrid from "@/components/CollectionsGrid";
 import { getCollections } from "@/lib/data";
 
 export const metadata: Metadata = {
-  title: "Collections — Uche Fashion International",
+  title: "Collections — Emmanuel Uche Global",
   description:
-    "Browse ready-to-wear and made-to-order collections from Uche Fashion International.",
+    "Browse ready-to-wear and made-to-order collections from Emmanuel Uche Global.",
 };
 
 export default async function CollectionsPage() {
@@ -33,7 +33,7 @@ export default async function CollectionsPage() {
         primaryCta={{ label: "New Collection", href: "/collections/ss26-new-collection" }}
         secondaryCta={{ label: "Back to Home", href: "/" }}
         image="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80"
-        imageAlt="Uche Fashion International collections"
+        imageAlt="Emmanuel Uche Global collections"
       />
       <Marquee />
       <CollectionsGrid collections={collections} />

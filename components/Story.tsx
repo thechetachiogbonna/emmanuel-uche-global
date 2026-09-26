@@ -5,7 +5,7 @@ export default function Story() {
         <div className="md:col-span-5 aspect-4/5 overflow-hidden">
           <img
             src="/images/IMG-20260922-WA0015.jpg"
-            alt="Uche Fashion International studio in Aba"
+            alt="Emmanuel Uche Global studio in Aba"
             className="w-full h-full object-cover"
           />
         </div>

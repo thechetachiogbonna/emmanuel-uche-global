@@ -80,7 +80,7 @@ export default function PageHero({
                 muted
                 loop
                 playsInline
-                aria-label={`${imageAlt ?? "Uche Fashion International campaign"} ${index + 1}`}
+                aria-label={`${imageAlt ?? "Emmanuel Uche Global campaign"} ${index + 1}`}
               >
                 <source src={source} type="video/mp4" />
               </video>

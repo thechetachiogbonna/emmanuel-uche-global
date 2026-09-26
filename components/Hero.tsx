@@ -19,7 +19,7 @@ export default function Hero() {
         "/videos/VID-20260922-WA0017.mp4",
       ]}
       image="https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=1600&q=80"
-      imageAlt="Uche Fashion International SS26 campaign"
+      imageAlt="Emmanuel Uche Global SS26 campaign"
     />
   );
 }

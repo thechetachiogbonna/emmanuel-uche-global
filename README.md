@@ -1,8 +1,9 @@
-# Uche Fashion International
+# Emmanuel Uche Global
 
 ## Setup
 
 1. Install dependencies:
+
    ```bash
    npm install
    ```
@@ -12,21 +13,26 @@
    - A hosted instance: [Neon](https://neon.tech), [Supabase](https://supabase.com), [Railway](https://railway.app), or [Render](https://render.com) all have free tiers
 
 3. Copy the env example and fill in your real values:
+
    ```bash
    cp .env.example .env
    ```
+
    - `DATABASE_URL` — your Postgres connection string
    - `BETTER_AUTH_SECRET` — generate one with `openssl rand -base64 32`
    - `ADMIN_EMAIL` / `ADMIN_SEED_PASSWORD` — your first admin login, used only by the seed script
 
 4. Run migrations, then seed:
+
    ```bash
    npm run db:migrate
    npm run db:seed
    ```
+
    This creates your admin user and seeds the same collections/products the site shipped with, plus a few sample customers and orders so the admin console isn't empty.
 
 5. Start the dev server:
+
    ```bash
    npm run dev
    ```

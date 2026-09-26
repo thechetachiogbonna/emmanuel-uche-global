@@ -89,7 +89,7 @@ export default function SignupPrompt({ session }: { session: Session }) {
         </button>
 
         <p className="text-[11px] tracking-[0.18em] uppercase text-clay mb-3">
-          Uche Fashion International
+          Emmanuel Uche Global
         </p>
         <h2 className="font-display font-light italic text-3xl mb-3 leading-tight">
           Don&apos;t miss the next drop
