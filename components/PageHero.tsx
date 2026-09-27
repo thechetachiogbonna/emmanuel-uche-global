@@ -70,7 +70,7 @@ export default function PageHero({
       </div>
 
       {(image || heroVideos.length > 0) && (
-        <div className={`relative mt-12 md:mt-16 overflow-hidden ${heroVideos.length > 0 ? "grid grid-cols-2 bg-sand" : "aspect-16/8 md:aspect-16/7 bg-sand"}`}>
+        <div className={`relative -mx-6 mt-12 overflow-hidden md:mx-0 md:mt-16 ${heroVideos.length > 0 ? "grid grid-cols-2 bg-sand" : "aspect-16/8 bg-sand md:aspect-16/7"}`}>
           {heroVideos.length > 0 ? (
             heroVideos.map((source, index) => (
               <video
