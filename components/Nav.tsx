@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { logoutAction } from "@/lib/actions/auth";
 import { useCart } from "@/lib/cart/CartContext";
 import { useCartDrawer } from "@/lib/cart/CartDrawerContext";
@@ -19,9 +19,36 @@ type Session = { name: string; email: string } | null;
 export default function Nav({ session }: { session: Session }) {
   const [open, setOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const menuButtonRef = useRef<HTMLButtonElement>(null);
+  const mobileMenuRef = useRef<HTMLElement>(null);
   const router = useRouter();
   const { itemCount } = useCart();
   const { openCart } = useCartDrawer();
+
+  useEffect(() => {
+    if (!open) return;
+
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      const target = event.target;
+      if (
+        target instanceof Node &&
+        !menuButtonRef.current?.contains(target) &&
+        !mobileMenuRef.current?.contains(target)
+      ) {
+        setOpen(false);
+      }
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [open]);
 
   const handleLogout = async () => {
     await logoutAction();
@@ -96,18 +123,34 @@ export default function Nav({ session }: { session: Session }) {
             </button>
 
             <button
-              aria-label="Menu"
-              className="md:hidden flex flex-col gap-1.5 p-1"
+              ref={menuButtonRef}
+              type="button"
+              aria-label={open ? "Close menu" : "Open menu"}
+              aria-expanded={open}
+              aria-controls="mobile-navigation"
+              className="relative flex h-8 w-8 items-center justify-center md:hidden"
               onClick={() => setOpen(!open)}
             >
-              <span className="block w-5 h-px bg-ink" />
-              <span className="block w-5 h-px bg-ink" />
+              <span
+                className={`absolute h-px w-5 bg-ink transition-transform duration-300 ease-out ${
+                  open ? "rotate-45" : "-translate-y-[3px]"
+                }`}
+              />
+              <span
+                className={`absolute h-px w-5 bg-ink transition-transform duration-300 ease-out ${
+                  open ? "-rotate-45" : "translate-y-[3px]"
+                }`}
+              />
             </button>
           </div>
         </div>
 
         {open && (
-          <nav className="md:hidden flex flex-col border-t border-ink/10 bg-ivory">
+          <nav
+            ref={mobileMenuRef}
+            id="mobile-navigation"
+            className="md:hidden flex flex-col border-t border-ink/10 bg-ivory"
+          >
             {links.map((l) => (
               <Link
                 key={l.label}
