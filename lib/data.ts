@@ -1,6 +1,7 @@
 import { asc, eq } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { collections as collectionsTable, products as productsTable } from "@/lib/db/schema";
+import { getProductMedia, type ProductMediaItem } from "@/lib/product-media";
 
 export type Product = {
   id: string;
@@ -8,6 +9,7 @@ export type Product = {
   price: string;
   img1: string;
   img2: string;
+  media: ProductMediaItem[];
 };
 
 export type Collection = {
@@ -56,6 +58,7 @@ export async function getCollections(): Promise<Collection[]> {
       price: formatNaira(p.priceNaira),
       img1: p.img1,
       img2: p.img2,
+      media: getProductMedia(p.media, p.img1, p.img2),
     })),
   }));
 }
@@ -86,6 +89,7 @@ export async function getCollection(slug: string): Promise<Collection | undefine
       price: formatNaira(p.priceNaira),
       img1: p.img1,
       img2: p.img2,
+      media: getProductMedia(p.media, p.img1, p.img2),
     })),
   };
 }

@@ -46,6 +46,32 @@
 - `npm run db:seed` — re-run the seed script (safe to re-run; uses `onConflictDoNothing`)
 - `npm run db:studio` — opens Drizzle Studio, a GUI for browsing your database
 
+## Product media uploads
+
+Product images and videos are uploaded directly to Cloudflare R2. Add these values to `.env`:
+
+- `R2_ACCOUNT_ID`
+- `R2_ACCESS_KEY_ID`
+- `R2_SECRET_ACCESS_KEY`
+- `R2_BUCKET_NAME`
+- `R2_PUBLIC_URL` — the public custom domain for the bucket, without a trailing slash
+
+Create an R2 bucket and an S3 API token with read/write access to that bucket. Connect a public custom domain to the bucket, then set the bucket CORS policy so the site can send signed `PUT` uploads. Replace the production origin with the actual site origin:
+
+```json
+[
+  {
+    "AllowedOrigins": ["http://localhost:3000", "https://your-site.example"],
+    "AllowedMethods": ["GET", "HEAD", "PUT"],
+    "AllowedHeaders": ["Content-Type"],
+    "ExposeHeaders": ["ETag"],
+    "MaxAgeSeconds": 3600
+  }
+]
+```
+
+The admin uploader accepts JPEG, PNG, WebP, and AVIF images up to 20 MB, plus MP4, WebM, and QuickTime videos up to 100 MB. Each product can contain at most two videos and must include at least one image.
+
 ## Stack notes
 
 - **ORM**: [Drizzle](https://orm.drizzle.team), not Prisma — Prisma's engine binaries need network access this environment didn't have during development, so this was built and verified against Drizzle instead. Functionally equivalent for this project's needs.

@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { collections, products } from "@/lib/db/schema";
 import { slugify } from "@/lib/slug";
 import { requireAdmin } from "@/lib/auth";
+import type { ProductMediaItem } from "@/lib/product-media";
 
 type ActionResult<T = undefined> =
   | { ok: true; data: T }
@@ -25,10 +26,8 @@ function revalidateStorefront(slug?: string) {
 export type CollectionDraft = {
   name: string;
   slug: string;
-  season: string;
   description: string;
   image: string;
-  status: "available" | "coming-soon";
 };
 
 export async function createCollectionAction(
@@ -39,7 +38,6 @@ export async function createCollectionAction(
   const slug = slugify(draft.slug || draft.name);
   if (!slug) return { ok: false, error: "Slug is required." };
   if (!draft.name.trim()) return { ok: false, error: "Name is required." };
-  if (!draft.season.trim()) return { ok: false, error: "Season is required." };
 
   const existing = await db.query.collections.findFirst({
     where: eq(collections.slug, slug),
@@ -50,10 +48,8 @@ export async function createCollectionAction(
     id: newId("col"),
     slug,
     name: draft.name.trim(),
-    season: draft.season.trim(),
     description: draft.description.trim(),
     image: draft.image.trim(),
-    status: draft.status,
   });
 
   revalidateStorefront(slug);
@@ -67,16 +63,13 @@ export async function updateCollectionAction(
   await requireAdmin();
 
   if (!draft.name.trim()) return { ok: false, error: "Name is required." };
-  if (!draft.season.trim()) return { ok: false, error: "Season is required." };
 
   await db
     .update(collections)
     .set({
       name: draft.name.trim(),
-      season: draft.season.trim(),
       description: draft.description.trim(),
       image: draft.image.trim(),
-      status: draft.status,
       updatedAt: new Date(),
     })
     .where(eq(collections.slug, currentSlug));
@@ -97,12 +90,27 @@ export type ProductDraft = {
   price: string; // "₦165,000" — parsed to an integer for storage
   img1: string;
   img2: string;
+  media: ProductMediaItem[];
 };
 
 function parseNaira(price: string): number | null {
   const digits = price.replace(/[^\d]/g, "");
   if (!digits) return null;
   return parseInt(digits, 10);
+}
+
+function normalizeProductMedia(media: ProductMediaItem[]) {
+  return media
+    .filter((item) => item.src.trim())
+    .map((item) => ({ src: item.src.trim(), type: item.type }));
+}
+
+function hasValidVideoCount(media: ProductMediaItem[]) {
+  return media.filter((item) => item.type === "video").length <= 2;
+}
+
+function isValidMediaUrl(src: string) {
+  return /^(https?:\/\/|\/(?!\/))/.test(src);
 }
 
 export async function createProductAction(
@@ -119,14 +127,26 @@ export async function createProductAction(
   if (!draft.name.trim()) return { ok: false, error: "Product name is required." };
   const priceNaira = parseNaira(draft.price);
   if (priceNaira === null) return { ok: false, error: "Enter a valid price." };
+  const media = normalizeProductMedia(draft.media);
+  if (!hasValidVideoCount(media)) {
+    return { ok: false, error: "A product can have no more than two videos." };
+  }
+  if (!media.some((item) => item.type === "image")) {
+    return { ok: false, error: "Add at least one product image." };
+  }
+  if (media.some((item) => !isValidMediaUrl(item.src))) {
+    return { ok: false, error: "Media URLs must use http(s) or a site-relative path." };
+  }
+  const images = media.filter((item) => item.type === "image");
 
   await db.insert(products).values({
     id: newId("prod"),
     collectionId: collection.id,
     name: draft.name.trim(),
     priceNaira,
-    img1: draft.img1.trim(),
-    img2: draft.img2.trim() || draft.img1.trim(),
+    img1: images[0].src,
+    img2: images[1]?.src ?? images[0].src,
+    media,
   });
 
   revalidateStorefront(collectionSlug);
@@ -143,14 +163,26 @@ export async function updateProductAction(
   if (!draft.name.trim()) return { ok: false, error: "Product name is required." };
   const priceNaira = parseNaira(draft.price);
   if (priceNaira === null) return { ok: false, error: "Enter a valid price." };
+  const media = normalizeProductMedia(draft.media);
+  if (!hasValidVideoCount(media)) {
+    return { ok: false, error: "A product can have no more than two videos." };
+  }
+  if (!media.some((item) => item.type === "image")) {
+    return { ok: false, error: "Add at least one product image." };
+  }
+  if (media.some((item) => !isValidMediaUrl(item.src))) {
+    return { ok: false, error: "Media URLs must use http(s) or a site-relative path." };
+  }
+  const images = media.filter((item) => item.type === "image");
 
   await db
     .update(products)
     .set({
       name: draft.name.trim(),
       priceNaira,
-      img1: draft.img1.trim(),
-      img2: draft.img2.trim() || draft.img1.trim(),
+      img1: images[0].src,
+      img2: images[1]?.src ?? images[0].src,
+      media,
       updatedAt: new Date(),
     })
     .where(eq(products.id, productId));

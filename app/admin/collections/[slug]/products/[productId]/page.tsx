@@ -47,6 +47,7 @@ export default async function EditProductPage({
           price: product.price,
           img1: product.img1,
           img2: product.img2,
+          media: product.media,
         }}
       />
     </div>

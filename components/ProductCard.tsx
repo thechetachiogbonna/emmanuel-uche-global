@@ -11,9 +11,11 @@ export default function ProductCard({
   className?: string;
 }) {
   const media: MediaItem[] = [
-    { src: product.img1, type: "image" as const, alt: product.name },
-    { src: product.img2, type: "image" as const, alt: `${product.name} alternate view` },
-  ].filter((item) => item.src);
+    ...product.media.map((item, index) => ({
+      ...item,
+      alt: index === 0 ? product.name : `${product.name} image ${index + 1}`,
+    })),
+  ];
 
   return (
     <div className={`group ${className}`}>

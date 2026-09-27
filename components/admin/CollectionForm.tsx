@@ -22,12 +22,8 @@ export default function CollectionForm({
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
   const [slugTouched, setSlugTouched] = useState(!!initial?.slug);
-  const [season, setSeason] = useState(initial?.season ?? "");
   const [description, setDescription] = useState(initial?.description ?? "");
   const [image, setImage] = useState(initial?.image ?? "");
-  const [status, setStatus] = useState<CollectionDraft["status"]>(
-    initial?.status ?? "coming-soon"
-  );
   const [error, setError] = useState<string | null>(null);
 
   const handleNameChange = (v: string) => {
@@ -47,18 +43,12 @@ export default function CollectionForm({
     ) {
       return setError("That slug is already in use — pick another.");
     }
-    if (!season.trim()) return setError("Season is required.");
-
     setError(null);
     onSubmit({
       name: name.trim(),
       slug: finalSlug,
-      season: season.trim(),
       description: description.trim(),
-      image:
-        image.trim() ||
-        "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=900&q=80",
-      status,
+      image: image.trim() || initial?.image || "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=900&q=80",
     });
   };
 
@@ -97,35 +87,6 @@ export default function CollectionForm({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-5">
-          <div>
-            <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
-              Season
-            </label>
-            <input
-              value={season}
-              onChange={(e) => setSeason(e.target.value)}
-              className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
-              placeholder="Resort 2025"
-            />
-          </div>
-          <div>
-            <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
-              Status
-            </label>
-            <select
-              value={status}
-              onChange={(e) =>
-                setStatus(e.target.value as CollectionDraft["status"])
-              }
-              className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors bg-white"
-            >
-              <option value="available">Available</option>
-              <option value="coming-soon">Coming Soon</option>
-            </select>
-          </div>
-        </div>
-
         <div>
           <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
             Description
@@ -144,14 +105,22 @@ export default function CollectionForm({
             Cover Image URL
           </label>
           <input
+            type="url"
             value={image}
             onChange={(e) => setImage(e.target.value)}
             className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
             placeholder="https://..."
           />
-          <p className="text-[11px] text-ink-soft mt-1.5">
-            Leave blank to use a placeholder image.
-          </p>
+          {image.trim() && (
+            <div className="mt-3 aspect-16/7 max-w-sm overflow-hidden bg-sand">
+              {/* eslint-disable-next-line @next/next/no-img-element -- admin preview accepts arbitrary image URLs */}
+              <img
+                src={image.trim()}
+                alt="Collection cover preview"
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
         </div>
 
         {error && <p className="text-[13px] text-red-700">{error}</p>}

@@ -8,8 +8,10 @@ import {
   pgEnum,
   index,
   uniqueIndex,
+  jsonb,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import type { ProductMediaItem } from "@/lib/product-media";
 
 export const collectionStatusEnum = pgEnum("collection_status", [
   "available",
@@ -34,7 +36,7 @@ export const collections = pgTable("collections", {
   id: varchar("id", { length: 30 }).primaryKey(),
   slug: varchar("slug", { length: 120 }).notNull().unique(),
   name: text("name").notNull(),
-  season: text("season").notNull(),
+  season: text("season").notNull().default("Collection"),
   description: text("description").notNull().default(""),
   image: text("image").notNull(),
   status: collectionStatusEnum("status").notNull().default("coming-soon"),
@@ -52,6 +54,7 @@ export const products = pgTable("products", {
   priceNaira: integer("price_naira").notNull(),
   img1: text("img1").notNull(),
   img2: text("img2").notNull(),
+  media: jsonb("media").$type<ProductMediaItem[]>().notNull().default([]),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });

@@ -38,7 +38,7 @@ export default async function CollectionPage({ params }: Props) {
   return (
     <main className="flex-1">
       <PageHero
-        tag={`${collection.season} — Collection`}
+        tag={collection.season ? `${collection.season} — Collection` : "Collection"}
         title={
           <>
             {collection.name.split(" ")[0]}

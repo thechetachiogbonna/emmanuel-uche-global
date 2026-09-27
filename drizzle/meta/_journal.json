@@ -15,6 +15,20 @@
       "when": 1789109494266,
       "tag": "0001_closed_junta",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1789109494267,
+      "tag": "0005_product_media_gallery",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1789109494268,
+      "tag": "0006_collection_season_default",
+      "breakpoints": true
     }
   ]
 }
