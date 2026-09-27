@@ -60,7 +60,7 @@ export default function CartDrawer() {
 
       {/* Sliding panel from right */}
       <div
-        className={`fixed top-2 right-2 bottom-2 z-[96] w-full max-w-[420px] bg-white rounded-2xl shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col overflow-hidden font-sans text-gray-800 ${
+        className={`fixed top-2 right-2 bottom-2 z-[96] w-[calc(100vw-1rem)] max-w-[420px] bg-white rounded-2xl shadow-2xl transition-transform duration-300 ease-[cubic-bezier(0.16,1,0.3,1)] flex flex-col overflow-hidden font-sans text-gray-800 ${
           open ? "translate-x-0" : "translate-x-[calc(100%+1rem)]"
         }`}
         role="dialog"

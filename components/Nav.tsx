@@ -118,15 +118,6 @@ export default function Nav({ session }: { session: Session }) {
                 {l.label}
               </Link>
             ))}
-            <button
-              onClick={() => {
-                setOpen(false);
-                openCart();
-              }}
-              className="text-left px-6 py-4 text-sm tracking-wide uppercase border-b border-ink/5"
-            >
-              Bag {itemCount > 0 && `(${itemCount})`}
-            </button>
           </nav>
         )}
       </header>
