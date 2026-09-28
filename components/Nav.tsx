@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { logoutAction } from "@/lib/actions/auth";
@@ -64,9 +65,17 @@ export default function Nav({ session }: { session: Session }) {
         <div className="flex items-center justify-between px-6 md:px-10 py-4">
           <Link
             href="/"
-            className="font-display italic text-2xl md:text-3xl tracking-tight"
+            aria-label="Emmanuel Uche Global home"
+            className="shrink-0"
           >
-            Emmanuel Uche
+            <Image
+              src="/images/logo.png"
+              alt="Emmanuel Uche Global"
+              width={640}
+              height={480}
+              priority
+              className="h-12 w-[58px] object-contain md:h-14 md:w-[68px]"
+            />
           </Link>
 
           <nav className="hidden md:flex items-center gap-10">

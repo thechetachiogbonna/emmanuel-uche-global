@@ -1,7 +1,6 @@
 import "server-only";
 import { asc, desc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
-import { getProductMedia } from "@/lib/product-media";
 import {
   collections as collectionsTable,
   products as productsTable,
@@ -31,9 +30,7 @@ export async function getAdminCollections() {
       id: p.id,
       name: p.name,
       price: formatNaira(p.priceNaira),
-      img1: p.img1,
-      img2: p.img2,
-      media: getProductMedia(p.media, p.img1, p.img2),
+      media: p.media,
     })),
   }));
 }

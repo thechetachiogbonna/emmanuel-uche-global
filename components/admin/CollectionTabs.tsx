@@ -5,7 +5,7 @@ import { useState } from "react";
 import EditCollectionForm from "@/components/admin/EditCollectionForm";
 import DeleteProductButton from "@/components/admin/DeleteProductButton";
 
-type Product = { id: string; name: string; price: string; img1: string; img2: string };
+type Product = { id: string; name: string; price: string; media: { src: string; type: "image" | "video" }[] };
 type Collection = {
   slug: string;
   name: string;
@@ -24,7 +24,7 @@ export default function CollectionTabs({ collection }: { collection: Collection 
       <div className="flex gap-2 mb-6 border-b border-ink/10">
         <button
           onClick={() => setTab("products")}
-          className={`px-3 py-2.5 text-[12px] tracking-[0.1em] uppercase border-b-2 -mb-px transition-colors ${
+          className={`px-3 py-2.5 text-[12px] tracking-widest uppercase border-b-2 -mb-px transition-colors ${
             tab === "products"
               ? "border-clay text-ink"
               : "border-transparent text-ink-soft hover:text-ink"
@@ -34,7 +34,7 @@ export default function CollectionTabs({ collection }: { collection: Collection 
         </button>
         <button
           onClick={() => setTab("details")}
-          className={`px-3 py-2.5 text-[12px] tracking-[0.1em] uppercase border-b-2 -mb-px transition-colors ${
+          className={`px-3 py-2.5 text-[12px] tracking-widest uppercase border-b-2 -mb-px transition-colors ${
             tab === "details"
               ? "border-clay text-ink"
               : "border-transparent text-ink-soft hover:text-ink"
@@ -73,7 +73,7 @@ export default function CollectionTabs({ collection }: { collection: Collection 
                       <div className="flex items-center gap-3">
                         {/* eslint-disable-next-line @next/next/no-img-element -- admin tooling only, arbitrary external URLs */}
                         <img
-                          src={p.img1}
+                          src={p.media.find((item) => item.type === "image")?.src ?? ""}
                           alt={p.name}
                           className="w-10 h-12 object-cover bg-sand"
                         />

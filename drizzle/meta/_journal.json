@@ -29,6 +29,13 @@
       "when": 1789109494268,
       "tag": "0006_collection_season_default",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1789109494269,
+      "tag": "0007_products_media_only",
+      "breakpoints": true
     }
   ]
 }

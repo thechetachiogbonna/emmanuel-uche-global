@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 import { loginAction } from "@/lib/actions/auth";
@@ -29,9 +30,13 @@ function LoginForm() {
 
   return (
     <div className="w-full max-w-sm bg-white py-10 px-8 rounded-lg shadow-lg">
-      <p className="text-[12px] tracking-[0.18em] uppercase text-clay mb-4 text-center">
-        Emmanuel Uche Global
-      </p>
+      <Image
+        src="/images/logo.png"
+        alt="Emmanuel Uche Global"
+        width={640}
+        height={480}
+        className="mx-auto mb-6 h-36 w-[175px] object-contain"
+      />
       <h1 className="font-display font-light italic text-4xl text-center mb-3">
         Welcome back
       </h1>

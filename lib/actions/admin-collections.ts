@@ -88,8 +88,6 @@ export async function deleteCollectionAction(slug: string): Promise<ActionResult
 export type ProductDraft = {
   name: string;
   price: string; // "₦165,000" — parsed to an integer for storage
-  img1: string;
-  img2: string;
   media: ProductMediaItem[];
 };
 
@@ -137,15 +135,11 @@ export async function createProductAction(
   if (media.some((item) => !isValidMediaUrl(item.src))) {
     return { ok: false, error: "Media URLs must use http(s) or a site-relative path." };
   }
-  const images = media.filter((item) => item.type === "image");
-
   await db.insert(products).values({
     id: newId("prod"),
     collectionId: collection.id,
     name: draft.name.trim(),
     priceNaira,
-    img1: images[0].src,
-    img2: images[1]?.src ?? images[0].src,
     media,
   });
 
@@ -173,15 +167,11 @@ export async function updateProductAction(
   if (media.some((item) => !isValidMediaUrl(item.src))) {
     return { ok: false, error: "Media URLs must use http(s) or a site-relative path." };
   }
-  const images = media.filter((item) => item.type === "image");
-
   await db
     .update(products)
     .set({
       name: draft.name.trim(),
       priceNaira,
-      img1: images[0].src,
-      img2: images[1]?.src ?? images[0].src,
       media,
       updatedAt: new Date(),
     })

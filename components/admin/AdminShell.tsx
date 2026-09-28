@@ -1,6 +1,7 @@
 "use client";
 
 import { logoutAction } from "@/lib/actions/auth";
+import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
@@ -35,9 +36,13 @@ export default function AdminShell({
     <div className="min-h-screen bg-[#FAF8F4] text-ink flex">
       <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-ink/10 bg-white">
         <div className="px-6 py-6 border-b border-ink/10">
-          <div className="font-display italic text-2xl leading-none">
-            Uche
-          </div>
+          <Image
+            src="/images/logo.png"
+            alt="Emmanuel Uche Global"
+            width={640}
+            height={480}
+            className="h-20 w-[98px] object-contain object-left"
+          />
           <div className="text-[10px] tracking-[0.18em] uppercase text-ink-soft mt-1">
             Admin Console
           </div>
@@ -80,7 +85,13 @@ export default function AdminShell({
       </aside>
 
       <div className="md:hidden fixed top-0 left-0 right-0 z-40 bg-white border-b border-ink/10 flex items-center justify-between px-4 py-3">
-        <div className="font-display italic text-xl">Uche Admin</div>
+        <Image
+          src="/images/logo.png"
+          alt="Emmanuel Uche Global Admin"
+          width={640}
+          height={480}
+          className="h-12 w-[58px] object-contain object-left"
+        />
         <button onClick={logout} className="text-[12px] text-ink-soft">
           Log Out
         </button>

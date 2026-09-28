@@ -45,8 +45,6 @@ export default async function EditProductPage({
         initial={{
           name: product.name,
           price: product.price,
-          img1: product.img1,
-          img2: product.img2,
           media: product.media,
         }}
       />

@@ -21,8 +21,7 @@ export async function getSeedCollections(): Promise<AdminCollection[]> {
       id: `${c.slug}-p${i + 1}`,
       name: p.name,
       price: p.price,
-      img1: p.img1,
-      img2: p.img2,
+      media: p.media,
     })),
   }));
 }

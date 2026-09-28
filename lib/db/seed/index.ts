@@ -56,11 +56,11 @@ async function main() {
 
   // ---- Collections + products (same content the site shipped with) ----
   const sharedProducts = [
-    { name: "Tailored Wrap Dress", priceNaira: 165000, img1: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=700&q=80", img2: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=700&q=80" },
-    { name: "Ivory Tailored Set", priceNaira: 210000, img1: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=700&q=80", img2: "https://images.unsplash.com/photo-1550614000-4895a10e1bfd?w=700&q=80" },
-    { name: "Aso-Oke Blazer", priceNaira: 245000, img1: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=700&q=80", img2: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=700&q=80" },
-    { name: "Clay Silk Gown", priceNaira: 298000, img1: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=700&q=80", img2: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=700&q=80" },
-    { name: "Sand Linen Trouser", priceNaira: 98000, img1: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=700&q=80", img2: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=700&q=80" },
+    { name: "Tailored Wrap Dress", priceNaira: 165000, media: [{ src: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=700&q=80", type: "image" as const }, { src: "https://images.unsplash.com/photo-1515372039744-b8f02a3ae446?w=700&q=80", type: "image" as const }] },
+    { name: "Ivory Tailored Set", priceNaira: 210000, media: [{ src: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=700&q=80", type: "image" as const }, { src: "https://images.unsplash.com/photo-1550614000-4895a10e1bfd?w=700&q=80", type: "image" as const }] },
+    { name: "Aso-Oke Blazer", priceNaira: 245000, media: [{ src: "https://images.unsplash.com/photo-1496747611176-843222e1e57c?w=700&q=80", type: "image" as const }, { src: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=700&q=80", type: "image" as const }] },
+    { name: "Clay Silk Gown", priceNaira: 298000, media: [{ src: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=700&q=80", type: "image" as const }, { src: "https://images.unsplash.com/photo-1503342217505-b0a15ec3261c?w=700&q=80", type: "image" as const }] },
+    { name: "Sand Linen Trouser", priceNaira: 98000, media: [{ src: "https://images.unsplash.com/photo-1445205170230-053b83016050?w=700&q=80", type: "image" as const }, { src: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=700&q=80", type: "image" as const }] },
   ];
 
   const collectionSeeds = [
@@ -129,8 +129,7 @@ async function main() {
         collectionId,
         name: p.name,
         priceNaira: p.priceNaira,
-        img1: p.img1,
-        img2: p.img2,
+        media: p.media,
       });
     }
     console.log(`  ✓ Collection: ${seed.name} (${seed.productIndexes.length} products)`);
@@ -172,8 +171,8 @@ async function main() {
       totalNaira: 363000,
       itemCount: 2,
       items: [
-        { productName: "Tailored Wrap Dress", priceNaira: 165000, quantity: 1, img1: sharedProducts[0].img1 },
-        { productName: "Sand Linen Trouser", priceNaira: 98000, quantity: 2, img1: sharedProducts[4].img1 },
+        { productName: "Tailored Wrap Dress", priceNaira: 165000, quantity: 1, img1: sharedProducts[0].media[0].src },
+        { productName: "Sand Linen Trouser", priceNaira: 98000, quantity: 2, img1: sharedProducts[4].media[0].src },
       ],
     },
     {
@@ -182,7 +181,7 @@ async function main() {
       totalNaira: 245000,
       itemCount: 1,
       items: [
-        { productName: "Aso-Oke Blazer", priceNaira: 245000, quantity: 1, img1: sharedProducts[2].img1 },
+        { productName: "Aso-Oke Blazer", priceNaira: 245000, quantity: 1, img1: sharedProducts[2].media[0].src },
       ],
     },
     {
@@ -191,8 +190,8 @@ async function main() {
       totalNaira: 461000,
       itemCount: 3,
       items: [
-        { productName: "Ivory Tailored Set", priceNaira: 210000, quantity: 1, img1: sharedProducts[1].img1 },
-        { productName: "Clay Silk Gown", priceNaira: 251000, quantity: 1, img1: sharedProducts[3].img1 },
+        { productName: "Ivory Tailored Set", priceNaira: 210000, quantity: 1, img1: sharedProducts[1].media[0].src },
+        { productName: "Clay Silk Gown", priceNaira: 251000, quantity: 1, img1: sharedProducts[3].media[0].src },
       ],
     },
   ];

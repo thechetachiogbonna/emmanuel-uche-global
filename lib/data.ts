@@ -1,4 +1,4 @@
-import { asc, eq } from "drizzle-orm";
+import { asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { collections as collectionsTable, products as productsTable } from "@/lib/db/schema";
 import { getProductMedia, type ProductMediaItem } from "@/lib/product-media";
@@ -7,8 +7,6 @@ export type Product = {
   id: string;
   name: string;
   price: string;
-  img1: string;
-  img2: string;
   media: ProductMediaItem[];
 };
 
@@ -56,9 +54,7 @@ export async function getCollections(): Promise<Collection[]> {
       id: p.id,
       name: p.name,
       price: formatNaira(p.priceNaira),
-      img1: p.img1,
-      img2: p.img2,
-      media: getProductMedia(p.media, p.img1, p.img2),
+      media: getProductMedia(p.media),
     })),
   }));
 }
@@ -87,11 +83,34 @@ export async function getCollection(slug: string): Promise<Collection | undefine
       id: p.id,
       name: p.name,
       price: formatNaira(p.priceNaira),
-      img1: p.img1,
-      img2: p.img2,
-      media: getProductMedia(p.media, p.img1, p.img2),
+      media: getProductMedia(p.media),
     })),
   };
+}
+
+export async function getRandomAvailableProducts(limit = 6): Promise<Product[]> {
+  const rows = await db
+    .select({
+      id: productsTable.id,
+      name: productsTable.name,
+      priceNaira: productsTable.priceNaira,
+      media: productsTable.media,
+    })
+    .from(productsTable)
+    .innerJoin(
+      collectionsTable,
+      eq(productsTable.collectionId, collectionsTable.id)
+    )
+    .where(eq(collectionsTable.status, "available"))
+    .orderBy(sql`random()`)
+    .limit(limit);
+
+  return rows.map((product) => ({
+    id: product.id,
+    name: product.name,
+    price: formatNaira(product.priceNaira),
+    media: getProductMedia(product.media),
+  }));
 }
 
 /**
@@ -108,6 +127,6 @@ export async function getProductsByIds(ids: string[]) {
     id: p.id,
     name: p.name,
     priceNaira: p.priceNaira,
-    img1: p.img1,
+    img1: p.media.find((item) => item.type === "image")?.src ?? "",
   }));
 }

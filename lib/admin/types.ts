@@ -2,8 +2,7 @@ export type AdminProduct = {
   id: string;
   name: string;
   price: string; // formatted, matches site convention e.g. "₦165,000"
-  img1: string;
-  img2: string;
+  media: import("@/lib/product-media").ProductMediaItem[];
 };
 
 export type CollectionStatus = "available" | "coming-soon";

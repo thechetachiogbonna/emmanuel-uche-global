@@ -19,11 +19,7 @@ export default function ProductForm({
   const [name, setName] = useState(initial?.name ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
   const [media, setMedia] = useState<ProductMediaItem[]>(() => {
-    const savedMedia = initial?.media?.length
-      ? initial.media
-      : [initial?.img1, initial?.img2]
-          .filter((source): source is string => Boolean(source))
-          .map((src) => ({ src, type: "image" as const }));
+    const savedMedia = initial?.media ?? [];
     return savedMedia.length ? savedMedia : [{ src: "", type: "image" }];
   });
   const [error, setError] = useState<string | null>(null);
@@ -61,24 +57,36 @@ export default function ProductForm({
     setError(null);
     setUploadingIndex(index);
     try {
-      const response = await fetch("/api/admin/media-upload", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          contentType: file.type,
-          size: file.size,
-          mediaType: media[index].type,
-        }),
-      });
-      const signedUpload = await response.json();
+      let response: Response;
+      try {
+        response = await fetch("/api/admin/media-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            contentType: file.type,
+            size: file.size,
+            mediaType: media[index].type,
+          }),
+        });
+      } catch {
+        throw new Error("Could not reach the app upload endpoint. Check your connection and sign-in, then try again.");
+      }
+      const signedUpload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(signedUpload.error ?? "Could not prepare upload.");
 
-      const uploadResponse = await fetch(signedUpload.uploadUrl, {
-        method: "PUT",
-        headers: { "Content-Type": file.type },
-        body: file,
-      });
-      if (!uploadResponse.ok) throw new Error("Upload failed. Check the bucket CORS settings and try again.");
+      let uploadResponse: Response;
+      try {
+        uploadResponse = await fetch(signedUpload.uploadUrl, {
+          method: "PUT",
+          headers: { "Content-Type": file.type },
+          body: file,
+        });
+      } catch {
+        throw new Error("Could not reach R2. Check bucket CORS allows this site origin, PUT, and the Content-Type header.");
+      }
+      if (!uploadResponse.ok) {
+        throw new Error(`R2 rejected the upload (${uploadResponse.status}). Check the bucket, token permissions, and signed upload settings.`);
+      }
 
       updateMedia(index, { src: signedUpload.publicUrl });
     } catch (uploadError) {
@@ -107,8 +115,6 @@ export default function ProductForm({
     onSubmit({
       name: name.trim(),
       price: price.trim(),
-      img1: images[0].src.trim(),
-      img2: images[1]?.src.trim() || images[0].src.trim(),
       media: cleanMedia.map((item) => ({ ...item, src: item.src.trim() })),
     });
   };
@@ -255,7 +261,7 @@ export default function ProductForm({
             <h3 className="mb-3 text-[11px] uppercase tracking-[0.14em] text-ink-soft">
               Live Preview
             </h3>
-            <div className="w-full max-w-[280px]">
+            <div className="w-full max-w-70">
               <div className="relative aspect-10/13 overflow-hidden bg-sand">
                 {previewMedia.length ? (
                   <MediaCarousel

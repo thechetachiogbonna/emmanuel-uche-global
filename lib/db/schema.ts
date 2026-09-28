@@ -52,8 +52,6 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   // Stored as integer kobo-free naira amount; formatted with ₦ at render time.
   priceNaira: integer("price_naira").notNull(),
-  img1: text("img1").notNull(),
-  img2: text("img2").notNull(),
   media: jsonb("media").$type<ProductMediaItem[]>().notNull().default([]),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

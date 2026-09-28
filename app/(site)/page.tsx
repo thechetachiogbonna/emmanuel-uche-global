@@ -3,17 +3,16 @@ import Marquee from "@/components/Marquee";
 import ProductRail from "@/components/ProductRail";
 import Story from "@/components/Story";
 import MadeToOrder from "@/components/MadeToOrder";
-import { getCollections } from "@/lib/data";
+import { getRandomAvailableProducts } from "@/lib/data";
 
 export default async function Home() {
-  const collections = await getCollections();
-  const featured = collections[0];
+  const pickedProducts = await getRandomAvailableProducts(6);
 
   return (
     <main className="flex-1">
       <Hero />
       <Marquee />
-      <ProductRail products={featured?.products ?? []} />
+      <ProductRail products={pickedProducts} />
       <Story />
       <MadeToOrder />
     </main>
