@@ -11,8 +11,6 @@ export type AdminCollection = {
   slug: string;
   season: string;
   name: string;
-  description: string;
-  image: string;
   status: CollectionStatus;
   products: AdminProduct[];
 };

@@ -68,9 +68,6 @@ async function main() {
       slug: "ss26-new-collection",
       season: "SS26",
       name: "New Collection",
-      description:
-        "Signature pieces finished in Aba — ready-to-wear and made-to-order silhouettes for the season ahead.",
-      image: "https://images.unsplash.com/photo-1490114538077-0a7f8cb49891?w=1200&q=80",
       status: "available" as const,
       productIndexes: [0, 1, 2, 3, 4],
     },
@@ -78,9 +75,6 @@ async function main() {
       slug: "resort-25",
       season: "Resort 25",
       name: "Resort Collection",
-      description:
-        "Light linen and silk pieces made for warm weather — tailored for travel between Aba, London, and Accra.",
-      image: "https://images.unsplash.com/photo-1483985988355-763728e1935b?w=1200&q=80",
       status: "available" as const,
       productIndexes: [0, 1, 2, 3],
     },
@@ -88,9 +82,6 @@ async function main() {
       slug: "aw25",
       season: "AW25",
       name: "Autumn Collection",
-      description:
-        "Layered tailoring and rich structured fabrics — arriving soon from our Aba studio.",
-      image: "https://images.unsplash.com/photo-1509631179647-0177331693ae?w=1200&q=80",
       status: "coming-soon" as const,
       productIndexes: [],
     },
@@ -104,11 +95,17 @@ async function main() {
         slug: seed.slug,
         name: seed.name,
         season: seed.season,
-        description: seed.description,
-        image: seed.image,
         status: seed.status,
       })
-      .onConflictDoNothing({ target: collections.slug })
+      .onConflictDoUpdate({
+        target: collections.slug,
+        set: {
+          name: seed.name,
+          season: seed.season,
+          status: seed.status,
+          updatedAt: new Date(),
+        },
+      })
       .returning({ id: collections.id });
 
     // If it already existed, onConflictDoNothing returns nothing — look it up.
@@ -124,13 +121,32 @@ async function main() {
 
     for (const idx of seed.productIndexes) {
       const p = sharedProducts[idx];
-      await db.insert(products).values({
-        id: newId("prod"),
-        collectionId,
-        name: p.name,
-        priceNaira: p.priceNaira,
-        media: p.media,
+      const existingProduct = await db.query.products.findFirst({
+        where: (product, { and, eq }) =>
+          and(
+            eq(product.collectionId, collectionId),
+            eq(product.name, p.name)
+          ),
       });
+
+      if (existingProduct) {
+        await db
+          .update(products)
+          .set({
+            priceNaira: p.priceNaira,
+            media: p.media,
+            updatedAt: new Date(),
+          })
+          .where(eq(products.id, existingProduct.id));
+      } else {
+        await db.insert(products).values({
+          id: newId("prod"),
+          collectionId,
+          name: p.name,
+          priceNaira: p.priceNaira,
+          media: p.media,
+        });
+      }
     }
     console.log(`  ✓ Collection: ${seed.name} (${seed.productIndexes.length} products)`);
   }
@@ -197,25 +213,26 @@ async function main() {
   ];
 
   for (const o of sampleOrders) {
-    const orderId = newId("ord");
+    const paymentReference = `seed-${o.customerEmail.split("@")[0]}`;
     const [inserted] = await db
       .insert(orders)
       .values({
-        id: orderId,
+        id: newId("ord"),
         customerId: customerIds[o.customerEmail],
         status: o.status,
         paymentStatus: "paid",
+        paymentReference,
         totalNaira: o.totalNaira,
         itemCount: o.itemCount,
       })
-      .onConflictDoNothing()
+      .onConflictDoNothing({ target: orders.paymentReference })
       .returning({ id: orders.id });
 
     if (inserted) {
       await db.insert(orderItems).values(
         o.items.map((item) => ({
           id: newId("oi"),
-          orderId,
+          orderId: inserted.id,
           productName: item.productName,
           priceNaira: item.priceNaira,
           quantity: item.quantity,

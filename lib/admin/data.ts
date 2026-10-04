@@ -14,8 +14,6 @@ export async function getSeedCollections(): Promise<AdminCollection[]> {
     slug: c.slug,
     season: c.season,
     name: c.name,
-    description: c.description,
-    image: c.image,
     status: c.status,
     products: c.products.map((p, i) => ({
       id: `${c.slug}-p${i + 1}`,

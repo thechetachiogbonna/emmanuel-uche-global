@@ -21,7 +21,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 
   return {
     title: `${collection.name} — Emmanuel Uche Global`,
-    description: collection.description,
   };
 }
 
@@ -38,7 +37,6 @@ export default async function CollectionPage({ params }: Props) {
       <ProductGrid
         subtitle={collection.season || "Collection"}
         title={collection.name}
-        description={collection.description}
         products={collection.products}
       />
     </main>

@@ -1,6 +1,6 @@
 {
-  "id": "eae44207-e202-4fee-bf9d-6636ec6ff11f",
-  "prevId": "8c94fd09-b945-4b96-b027-d2ced5d748f9",
+  "id": "46546613-e0f3-46ac-ad68-31de0479673b",
+  "prevId": "eae44207-e202-4fee-bf9d-6636ec6ff11f",
   "version": "7",
   "dialect": "postgresql",
   "tables": {
@@ -203,19 +203,6 @@
           "primaryKey": false,
           "notNull": true,
           "default": "now()"
-        },
-        "description": {
-          "name": "description",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true,
-          "default": "''"
-        },
-        "image": {
-          "name": "image",
-          "type": "text",
-          "primaryKey": false,
-          "notNull": true
         }
       },
       "indexes": {},

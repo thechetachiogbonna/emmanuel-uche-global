@@ -5,12 +5,10 @@ export default function ProductGrid({
   products,
   title,
   subtitle,
-  description,
 }: {
   products: Product[];
   title: string;
   subtitle?: string;
-  description?: string;
 }) {
   return (
     <section className="px-4 md:px-8 xl:px-10 pt-12 md:pt-16 pb-20 md:pb-28">
@@ -24,11 +22,6 @@ export default function ProductGrid({
           <h1 className="font-display font-light text-3xl md:text-5xl">
             {title}
           </h1>
-          {description && (
-            <p className="mt-3 max-w-xl text-[13px] leading-relaxed text-ink-soft">
-              {description}
-            </p>
-          )}
         </div>
         <span className="shrink-0 text-[11px] tracking-widest uppercase text-ink-soft">
           {products.length} Pieces

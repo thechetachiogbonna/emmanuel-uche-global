@@ -2,6 +2,7 @@ import Link from "next/link";
 import { getAdminCollections } from "@/lib/admin/queries";
 import { CollectionStatusBadge } from "@/components/admin/Badge";
 import DeleteCollectionButton from "@/components/admin/DeleteCollectionButton";
+import AddCollectionModal from "@/components/admin/AddCollectionModal";
 
 export default async function CollectionsAdminPage() {
   const collections = await getAdminCollections();
@@ -10,12 +11,7 @@ export default async function CollectionsAdminPage() {
     <div>
       <div className="flex items-center justify-between mb-1">
         <h1 className="font-display text-2xl md:text-3xl">Collections</h1>
-        <Link
-          href="/admin/collections/new"
-          className="bg-ink text-ivory text-[12px] tracking-[0.12em] uppercase px-4 py-2.5 hover:bg-clay transition-colors"
-        >
-          + Add Collection
-        </Link>
+        <AddCollectionModal existingSlugs={collections.map((c) => c.slug)} />
       </div>
       <p className="text-[13px] text-ink-soft mb-6">
         {collections.length} collection{collections.length !== 1 ? "s" : ""}{" "}
@@ -38,12 +34,6 @@ export default async function CollectionsAdminPage() {
               <tr key={c.slug} className="border-b border-ink/5 last:border-0">
                 <td className="px-4 py-3">
                   <div className="flex items-center gap-3">
-                    {/* eslint-disable-next-line @next/next/no-img-element -- admin tooling only, arbitrary external URLs */}
-                    <img
-                      src={c.image}
-                      alt={c.name}
-                      className="w-10 h-12 object-cover bg-sand"
-                    />
                     <div>
                       <div>{c.name}</div>
                       <div className="text-[11px] text-ink-soft font-mono">

@@ -23,8 +23,6 @@ export async function getAdminCollections() {
     slug: c.slug,
     name: c.name,
     season: c.season,
-    description: c.description,
-    image: c.image,
     status: c.status,
     products: c.products.map((p) => ({
       id: p.id,

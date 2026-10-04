@@ -26,8 +26,6 @@ function revalidateStorefront(slug?: string) {
 export type CollectionDraft = {
   name: string;
   slug: string;
-  description: string;
-  image: string;
 };
 
 export async function createCollectionAction(
@@ -48,8 +46,6 @@ export async function createCollectionAction(
     id: newId("col"),
     slug,
     name: draft.name.trim(),
-    description: draft.description.trim(),
-    image: draft.image.trim(),
   });
 
   revalidateStorefront(slug);
@@ -68,8 +64,6 @@ export async function updateCollectionAction(
     .update(collections)
     .set({
       name: draft.name.trim(),
-      description: draft.description.trim(),
-      image: draft.image.trim(),
       updatedAt: new Date(),
     })
     .where(eq(collections.slug, currentSlug));

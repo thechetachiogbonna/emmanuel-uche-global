@@ -11,7 +11,7 @@ export default async function Footer() {
         <div className="md:col-span-4">
           <Image
             src="/images/logo.png"
-            alt="Emmanuel Uche Global"
+            alt={settings.storeName}
             width={640}
             height={480}
             className="mb-5 h-28 w-[136px] object-contain object-left"

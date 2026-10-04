@@ -29,5 +29,6 @@ export async function updateSettingsAction(draft: SettingsDraft) {
   }
 
   revalidatePath("/admin/settings");
+  revalidatePath("/", "layout");
   return { ok: true as const };
 }

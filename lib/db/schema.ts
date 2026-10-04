@@ -37,8 +37,6 @@ export const collections = pgTable("collections", {
   slug: varchar("slug", { length: 120 }).notNull().unique(),
   name: text("name").notNull(),
   season: text("season").notNull().default("Collection"),
-  description: text("description").notNull().default(""),
-  image: text("image").notNull(),
   status: collectionStatusEnum("status").notNull().default("coming-soon"),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),

@@ -10,8 +10,6 @@ type Collection = {
   slug: string;
   name: string;
   season: string;
-  description: string;
-  image: string;
   status: "available" | "coming-soon";
   products: Product[];
 };

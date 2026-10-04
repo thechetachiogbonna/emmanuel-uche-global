@@ -14,8 +14,6 @@ export type Collection = {
   slug: string;
   season: string;
   name: string;
-  description: string;
-  image: string;
   pieceCount: number;
   status: "available" | "coming-soon";
   products: Product[];
@@ -48,8 +46,6 @@ export async function getCollections(): Promise<Collection[]> {
     slug: c.slug,
     season: c.season,
     name: c.name,
-    description: c.description,
-    image: c.image,
     pieceCount: c.products.length,
     status: c.status,
     products: c.products.map((p) => ({
@@ -88,8 +84,6 @@ export async function getCollection(slug: string): Promise<Collection | undefine
     slug: row.slug,
     season: row.season,
     name: row.name,
-    description: row.description,
-    image: row.image,
     pieceCount: row.products.length,
     status: row.status,
     products: row.products.map((p) => ({
