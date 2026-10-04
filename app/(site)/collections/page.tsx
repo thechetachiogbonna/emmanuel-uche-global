@@ -1,42 +1,13 @@
-import type { Metadata } from "next";
-import Marquee from "@/components/Marquee";
-import PageHero from "@/components/PageHero";
-import CollectionsGrid from "@/components/CollectionsGrid";
-import { getCollections } from "@/lib/data";
+import { redirect } from "next/navigation";
+import { getCollectionLinks } from "@/lib/data";
 
-export const metadata: Metadata = {
-  title: "Collections — Emmanuel Uche Global",
-  description:
-    "Browse ready-to-wear and made-to-order collections from Emmanuel Uche Global.",
-};
+export const dynamic = "force-dynamic";
 
 export default async function CollectionsPage() {
-  const collections = await getCollections();
-
-  return (
-    <main className="flex-1">
-      <PageHero
-        tag="Shop"
-        title={
-          <>
-            Our
-            <br />
-            <span className="italic text-clay">Collections</span>
-          </>
-        }
-        description={
-          <>
-            Seasonal ready-to-wear and made-to-order pieces, hand-finished in{" "}
-            <span className="text-clay font-semibold">Our Studio</span> with precision tailoring.
-          </>
-        }
-        primaryCta={{ label: "New Collection", href: "/collections/ss26-new-collection" }}
-        secondaryCta={{ label: "Back to Home", href: "/" }}
-        image="https://images.unsplash.com/photo-1490481651871-ab68de25d43d?w=1600&q=80"
-        imageAlt="Emmanuel Uche Global collections"
-      />
-      <Marquee />
-      <CollectionsGrid collections={collections} />
-    </main>
+  const collections = await getCollectionLinks();
+  const firstAvailable = collections.find(
+    (collection) => collection.status === "available"
   );
+
+  redirect(firstAvailable ? `/collections/${firstAvailable.slug}` : "/");
 }

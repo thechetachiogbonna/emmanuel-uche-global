@@ -21,6 +21,8 @@ export type Collection = {
   products: Product[];
 };
 
+export type CollectionLink = Pick<Collection, "slug" | "name" | "status">;
+
 function formatNaira(amount: number) {
   return `\u20A6${amount.toLocaleString("en-NG")}`;
 }
@@ -57,6 +59,17 @@ export async function getCollections(): Promise<Collection[]> {
       media: getProductMedia(p.media),
     })),
   }));
+}
+
+export async function getCollectionLinks(): Promise<CollectionLink[]> {
+  return db
+    .select({
+      slug: collectionsTable.slug,
+      name: collectionsTable.name,
+      status: collectionsTable.status,
+    })
+    .from(collectionsTable)
+    .orderBy(asc(collectionsTable.createdAt));
 }
 
 export async function getCollection(slug: string): Promise<Collection | undefined> {

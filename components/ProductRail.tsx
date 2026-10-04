@@ -10,17 +10,17 @@ export default function ProductRail({ products }: { products: Product[] }) {
       <div className="mb-8 flex items-end justify-between">
         <div>
           <p className="mb-2 text-xs uppercase tracking-[0.18em] text-clay">
-            Shop In
+            Discover
           </p>
           <h2 className="font-display text-4xl font-light italic md:text-5xl">
-            Collections
+            Find Your Next Favorite
           </h2>
         </div>
         <Link
           href="/collections"
           className="text-[11px] uppercase tracking-[0.14em] underline-draw group"
         >
-          <span className="underline underline-draw">Shop</span>
+          <span className="underline underline-draw">Shop All</span>
         </Link>
       </div>
 

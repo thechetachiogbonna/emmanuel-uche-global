@@ -5,6 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import { logoutAction } from "@/lib/actions/auth";
+import type { CollectionLink } from "@/lib/data";
 import { useCart } from "@/lib/cart/CartContext";
 import { useCartDrawer } from "@/lib/cart/CartDrawerContext";
 import AccountDrawer from "@/components/AccountDrawer";
@@ -17,8 +18,15 @@ const links = [
 
 type Session = { name: string; email: string } | null;
 
-export default function Nav({ session }: { session: Session }) {
+export default function Nav({
+  session,
+  collections,
+}: {
+  session: Session;
+  collections: CollectionLink[];
+}) {
   const [open, setOpen] = useState(false);
+  const [collectionsOpen, setCollectionsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLElement>(null);
@@ -51,6 +59,17 @@ export default function Nav({ session }: { session: Session }) {
     };
   }, [open]);
 
+  useEffect(() => {
+    if (!collectionsOpen) return;
+
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setCollectionsOpen(false);
+    };
+
+    document.addEventListener("keydown", closeOnEscape);
+    return () => document.removeEventListener("keydown", closeOnEscape);
+  }, [collectionsOpen]);
+
   const handleLogout = async () => {
     await logoutAction();
     setAccountOpen(false);
@@ -79,6 +98,15 @@ export default function Nav({ session }: { session: Session }) {
           </Link>
 
           <nav className="hidden md:flex items-center gap-10">
+            <button
+              type="button"
+              aria-controls="collection-navigation"
+              aria-expanded={collectionsOpen}
+              onClick={() => setCollectionsOpen(true)}
+              className="group text-[12px] tracking-[0.14em] uppercase text-ink-soft hover:text-ink transition-colors"
+            >
+              <span className="underline-draw">Collections</span>
+            </button>
             {links.map((l) => (
               <Link
                 key={l.label}
@@ -132,13 +160,29 @@ export default function Nav({ session }: { session: Session }) {
             </button>
 
             <button
+              type="button"
+              aria-controls="collection-navigation"
+              aria-expanded={collectionsOpen}
+              onClick={() => {
+                setOpen(false);
+                setCollectionsOpen(true);
+              }}
+              className="md:hidden text-[10px] tracking-[0.08em] uppercase text-ink-soft hover:text-ink transition-colors"
+            >
+              Collections
+            </button>
+
+            <button
               ref={menuButtonRef}
               type="button"
               aria-label={open ? "Close menu" : "Open menu"}
               aria-expanded={open}
               aria-controls="mobile-navigation"
               className="relative flex h-8 w-8 items-center justify-center md:hidden"
-              onClick={() => setOpen(!open)}
+              onClick={() => {
+                setCollectionsOpen(false);
+                setOpen(!open);
+              }}
             >
               <span
                 className={`absolute h-px w-5 bg-ink transition-transform duration-300 ease-out ${
@@ -173,6 +217,51 @@ export default function Nav({ session }: { session: Session }) {
           </nav>
         )}
       </header>
+
+      {collectionsOpen && (
+        <div className="fixed inset-0 z-[60] flex">
+          <button
+            type="button"
+            aria-label="Close collections menu"
+            onClick={() => setCollectionsOpen(false)}
+            className="absolute inset-0 bg-ink/30"
+          />
+          <aside
+            id="collection-navigation"
+            role="dialog"
+            aria-modal="true"
+            aria-label="Collections"
+            className="relative z-10 flex h-full w-[min(440px,88vw)] flex-col bg-ivory shadow-xl"
+          >
+            <div className="flex justify-end px-6 py-5">
+              <button
+                type="button"
+                aria-label="Close collections menu"
+                onClick={() => setCollectionsOpen(false)}
+                className="flex h-8 w-8 items-center justify-center text-ink-soft hover:text-ink"
+              >
+                <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" aria-hidden="true">
+                  <path strokeLinecap="round" d="m6 6 12 12M18 6 6 18" />
+                </svg>
+              </button>
+            </div>
+            <nav aria-label="Collections" className="flex flex-col overflow-y-auto px-6 pb-8">
+              {collections
+                .filter((collection) => collection.status === "available")
+                .map((collection) => (
+                  <Link
+                    key={collection.slug}
+                    href={`/collections/${collection.slug}`}
+                    onClick={() => setCollectionsOpen(false)}
+                    className="py-3 text-sm tracking-wide uppercase text-ink hover:text-clay"
+                  >
+                    {collection.name}
+                  </Link>
+                ))}
+            </nav>
+          </aside>
+        </div>
+      )}
 
       <AccountDrawer
         open={accountOpen}

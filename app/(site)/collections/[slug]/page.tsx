@@ -1,7 +1,5 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import Marquee from "@/components/Marquee";
-import PageHero from "@/components/PageHero";
 import ProductGrid from "@/components/ProductGrid";
 import { getCollection } from "@/lib/data";
 
@@ -37,27 +35,10 @@ export default async function CollectionPage({ params }: Props) {
 
   return (
     <main className="flex-1">
-      <PageHero
-        tag={collection.season ? `${collection.season} — Collection` : "Collection"}
-        title={
-          <>
-            {collection.name.split(" ")[0]}
-            <br />
-            <span className="italic text-clay">
-              {collection.name.split(" ").slice(1).join(" ") || collection.name}
-            </span>
-          </>
-        }
-        description={collection.description}
-        primaryCta={{ label: "All Collections", href: "/collections" }}
-        secondaryCta={{ label: "Our Story", href: "/#story" }}
-        image={collection.image}
-        imageAlt={collection.name}
-      />
-      <Marquee />
       <ProductGrid
-        subtitle="Shop"
+        subtitle={collection.season || "Collection"}
         title={collection.name}
+        description={collection.description}
         products={collection.products}
       />
     </main>
