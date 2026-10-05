@@ -143,12 +143,58 @@ body {
 }
 
 .auth-input-group input:focus {
-  border-color: var(--color-clay);
+  border-color: var(--color-ink-soft);
 }
 
 .auth-input-group input:focus-visible {
-  outline: 2px solid rgba(168, 83, 46, 0.55);
-  outline-offset: 4px;
+  outline: none;
+}
+
+.auth-password-control {
+  display: flex;
+  align-items: center;
+  border-bottom: 1px solid rgba(29, 26, 22, 0.35);
+  transition: border-color 180ms ease;
+}
+
+.auth-password-control:focus-within {
+  border-color: var(--color-ink-soft);
+}
+
+.auth-password-control input {
+  border-bottom: 0;
+}
+
+.auth-password-control input:focus {
+  border-color: transparent;
+}
+
+.auth-password-control input:focus-visible {
+  outline: none;
+}
+
+.auth-password-toggle {
+  display: inline-grid;
+  width: 32px;
+  height: 32px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  background: transparent;
+  padding: 0 0 9px 8px;
+  color: var(--color-ink-soft);
+  cursor: pointer;
+}
+
+.auth-password-toggle svg {
+  width: 17px;
+  height: 17px;
+}
+
+.auth-password-toggle:focus-visible {
+  border-radius: 2px;
+  outline: 2px solid var(--color-ink-soft);
+  outline-offset: 2px;
 }
 
 .auth-submit {

@@ -13,6 +13,8 @@ function SignupForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -70,35 +72,85 @@ function SignupForm() {
           />
         </label>
 
-        <label className="auth-input-group">
-          <span>Password*</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            minLength={8}
-            required
-            value={password}
-            onChange={(e) => {
-              setPassword(e.target.value);
-              setError(null);
-            }}
-          />
-        </label>
+        <div className="auth-input-group">
+          <label htmlFor="signup-password">Password*</label>
+          <div className="auth-password-control">
+            <input
+              id="signup-password"
+              type={showPassword ? "text" : "password"}
+              autoComplete="new-password"
+              minLength={8}
+              required
+              value={password}
+              onChange={(e) => {
+                setPassword(e.target.value);
+                setError(null);
+              }}
+            />
+            <button
+              type="button"
+              className="auth-password-toggle"
+              aria-label={showPassword ? "Hide password" : "Show password"}
+              aria-pressed={showPassword}
+              onClick={() => setShowPassword((visible) => !visible)}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" />
+                {showPassword && <path d="m3 3 18 18" />}
+              </svg>
+            </button>
+          </div>
+        </div>
 
-        <label className="auth-input-group">
-          <span>Confirm Password*</span>
-          <input
-            type="password"
-            autoComplete="new-password"
-            minLength={8}
-            required
-            value={confirm}
-            onChange={(e) => {
-              setConfirm(e.target.value);
-              setError(null);
-            }}
-          />
-        </label>
+        <div className="auth-input-group">
+          <label htmlFor="signup-confirm-password">Confirm Password*</label>
+          <div className="auth-password-control">
+            <input
+              id="signup-confirm-password"
+              type={showConfirm ? "text" : "password"}
+              autoComplete="new-password"
+              minLength={8}
+              required
+              value={confirm}
+              onChange={(e) => {
+                setConfirm(e.target.value);
+                setError(null);
+              }}
+            />
+            <button
+              type="button"
+              className="auth-password-toggle"
+              aria-label={
+                showConfirm ? "Hide confirm password" : "Show confirm password"
+              }
+              aria-pressed={showConfirm}
+              onClick={() => setShowConfirm((visible) => !visible)}
+            >
+              <svg
+                aria-hidden="true"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="1.7"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <path d="M2 12s3.6-7 10-7 10 7 10 7-3.6 7-10 7S2 12 2 12Z" />
+                <circle cx="12" cy="12" r="3" />
+                {showConfirm && <path d="m3 3 18 18" />}
+              </svg>
+            </button>
+          </div>
+        </div>
 
         {error && (
           <p className="auth-error" role="alert">
