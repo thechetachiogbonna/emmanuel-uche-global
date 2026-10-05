@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 import { signupAction } from "@/lib/actions/auth";
@@ -35,118 +34,101 @@ function SignupForm() {
   };
 
   return (
-    <div className="w-full max-w-sm bg-white py-10 px-8 rounded-lg shadow-lg">
-      <Image
-        src="/images/logo.png"
-        alt="Emmanuel Uche Global"
-        width={640}
-        height={480}
-        className="mx-auto mb-6 h-36 w-[175px] object-contain"
-      />
-      <h1 className="font-display font-light italic text-4xl text-center mb-3">
-        Create an account
-      </h1>
-      <p className="text-[14px] text-ink-soft text-center mb-10 leading-relaxed">
-        Join for early access to new collections and updates on your
-        made-to-order pieces as they&apos;re finished.
+    <section className="auth-panel auth-panel-signup">
+      <h1 className="auth-title">Create an Account</h1>
+      <p className="auth-description">
+        Access exclusives and more. Join for early access to new collections and
+        updates on your made-to-order pieces.
       </p>
 
-      <form onSubmit={handleSubmit} className="grid gap-5">
-        <div>
-          <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
-            Full Name
-          </label>
+      <form onSubmit={handleSubmit} className="auth-form">
+        <label className="auth-input-group">
+          <span>Full Name*</span>
           <input
             type="text"
             autoComplete="name"
+            required
             value={name}
             onChange={(e) => {
               setName(e.target.value);
               setError(null);
             }}
-            className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
-            placeholder="Your name"
           />
-        </div>
+        </label>
 
-        <div>
-          <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
-            Email
-          </label>
+        <label className="auth-input-group">
+          <span>Email*</span>
           <input
             type="email"
             autoComplete="email"
+            required
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
               setError(null);
             }}
-            className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
-            placeholder="you@example.com"
           />
-        </div>
+        </label>
 
-        <div>
-          <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
-            Password
-          </label>
+        <label className="auth-input-group">
+          <span>Password*</span>
           <input
             type="password"
             autoComplete="new-password"
+            minLength={8}
+            required
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
               setError(null);
             }}
-            className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
-            placeholder="At least 8 characters"
           />
-        </div>
+        </label>
 
-        <div>
-          <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
-            Confirm Password
-          </label>
+        <label className="auth-input-group">
+          <span>Confirm Password*</span>
           <input
             type="password"
             autoComplete="new-password"
+            minLength={8}
+            required
             value={confirm}
             onChange={(e) => {
               setConfirm(e.target.value);
               setError(null);
             }}
-            className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
-            placeholder="Re-enter your password"
           />
-        </div>
+        </label>
 
-        {error && <p className="text-[13px] text-red-700">{error}</p>}
+        {error && (
+          <p className="auth-error" role="alert">
+            {error}
+          </p>
+        )}
 
         <button
           type="submit"
           disabled={submitting}
-          className="bg-ink text-ivory text-[12px] tracking-[0.14em] uppercase py-3.5 hover:bg-clay transition-colors disabled:opacity-60"
+          className="auth-submit"
         >
           {submitting ? "Creating Account…" : "Create Account"}
         </button>
       </form>
 
-      <p className="text-[13px] text-ink-soft text-center mt-8">
-        Already have an account?{" "}
-        <Link href="/login" className="text-clay hover:underline">
-          Sign in
+      <div className="auth-alternate">
+        <p>Already have an account?</p>
+        <Link href="/login" className="auth-alternate-link">
+          Sign In
         </Link>
-      </p>
-    </div>
+      </div>
+    </section>
   );
 }
 
 export default function SignupPage() {
   return (
-    <section className="px-6 md:px-10 py-16 md:py-24 flex justify-center">
-      <Suspense fallback={<div className="w-full max-w-sm py-10 px-8" />}>
-        <SignupForm />
-      </Suspense>
-    </section>
+    <Suspense fallback={<div className="auth-panel" aria-hidden="true" />}>
+      <SignupForm />
+    </Suspense>
   );
 }

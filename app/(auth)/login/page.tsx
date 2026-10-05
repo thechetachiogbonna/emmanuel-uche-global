@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Suspense, useState, type FormEvent } from "react";
 import { loginAction } from "@/lib/actions/auth";
@@ -29,84 +28,71 @@ function LoginForm() {
   };
 
   return (
-    <div className="w-full max-w-sm bg-white py-10 px-8 rounded-lg shadow-lg">
-      <Image
-        src="/images/logo.png"
-        alt="Emmanuel Uche Global"
-        width={640}
-        height={480}
-        className="mx-auto mb-6 h-36 w-[175px] object-contain"
-      />
-      <h1 className="font-display font-light italic text-4xl text-center mb-3">
-        Welcome back
-      </h1>
-      <p className="text-[14px] text-ink-soft text-center mb-10 leading-relaxed">
-        Sign in to follow your made-to-order pieces and be first to know
-        when a new collection releases.
+    <section className="auth-panel">
+      <h1 className="auth-title">Welcome Back</h1>
+      <p className="auth-description">
+        Sign in to follow your made-to-order pieces and be first to know when a
+        new collection releases.
       </p>
 
-      <form onSubmit={handleSubmit} className="grid gap-5">
-        <div>
-          <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
-            Email
-          </label>
+      <form onSubmit={handleSubmit} className="auth-form">
+        <label className="auth-input-group">
+          <span>Email*</span>
           <input
             type="email"
             autoComplete="email"
+            required
             value={email}
             onChange={(e) => {
               setEmail(e.target.value);
               setError(null);
             }}
-            className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
-            placeholder="you@example.com"
           />
-        </div>
+        </label>
 
-        <div>
-          <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
-            Password
-          </label>
+        <label className="auth-input-group">
+          <span>Password*</span>
           <input
             type="password"
             autoComplete="current-password"
+            required
             value={password}
             onChange={(e) => {
               setPassword(e.target.value);
               setError(null);
             }}
-            className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
-            placeholder="••••••••"
           />
-        </div>
+        </label>
 
-        {error && <p className="text-[13px] text-red-700">{error}</p>}
+        {error && (
+          <p className="auth-error" role="alert">
+            {error}
+          </p>
+        )}
 
         <button
           type="submit"
           disabled={submitting}
-          className="bg-ink text-ivory text-[12px] tracking-[0.14em] uppercase py-3.5 hover:bg-clay transition-colors disabled:opacity-60"
+          className="auth-submit"
         >
           {submitting ? "Signing In…" : "Sign In"}
         </button>
       </form>
 
-      <p className="text-[13px] text-ink-soft text-center mt-8">
-        New here?{" "}
-        <Link href="/signup" className="text-clay hover:underline">
-          Create an account
+      <div className="auth-alternate">
+        <p>New here?</p>
+        <Link href="/signup" className="auth-alternate-link">
+          Create an Account
         </Link>
-      </p>
-    </div>
+      </div>
+    </section>
   );
 }
 
 export default function LoginPage() {
   return (
-    <section className="px-6 md:px-10 py-16 md:py-24 flex justify-center">
-      <Suspense fallback={<div className="w-full max-w-sm py-10 px-8" />}>
-        <LoginForm />
-      </Suspense>
-    </section>
+    <Suspense fallback={<div className="auth-panel" aria-hidden="true" />}>
+      <LoginForm />
+    </Suspense>
   );
 }
