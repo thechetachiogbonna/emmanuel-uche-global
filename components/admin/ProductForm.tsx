@@ -1,29 +1,38 @@
 "use client";
 
-import { useState, type FormEvent } from "react";
+import { useRef, useState, type FormEvent } from "react";
 import MediaCarousel, { type MediaItem } from "@/components/MediaCarousel";
 import type { ProductDraft } from "@/lib/actions/admin-collections";
 import type { ProductMediaItem } from "@/lib/product-media";
 
 type Draft = ProductDraft;
 
+function getDefaultMedia(media: ProductMediaItem[] | undefined): ProductMediaItem[] {
+  const savedMedia = Array.isArray(media) ? media.filter(Boolean) : [];
+  return savedMedia.length ? savedMedia : [{ src: "", type: "image" }];
+}
+
 export default function ProductForm({
   initial,
   onSubmit,
+  onSuccess,
   submitLabel,
 }: {
   initial?: Draft;
-  onSubmit: (draft: Draft) => void | Promise<void>;
+  onSubmit: (draft: Draft) => boolean | Promise<boolean>;
+  onSuccess?: () => void;
   submitLabel: string;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
-  const [media, setMedia] = useState<ProductMediaItem[]>(() => {
-    const savedMedia = initial?.media ?? [];
-    return savedMedia.length ? savedMedia : [{ src: "", type: "image" }];
-  });
+  const [media, setMedia] = useState<ProductMediaItem[]>(() =>
+    getDefaultMedia(initial?.media)
+  );
   const [error, setError] = useState<string | null>(null);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
+  const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
+  const [pendingDeletions, setPendingDeletions] = useState<string[]>([]);
+  const uploadedMedia = useRef(new Set<string>());
   const videoCount = media.filter((item) => item.type === "video").length;
   const previewMedia: MediaItem[] = media
     .filter((item) => item.src.trim())
@@ -43,17 +52,77 @@ export default function ProductForm({
   const moveMedia = (index: number, direction: -1 | 1) => {
     const targetIndex = index + direction;
     if (targetIndex < 0 || targetIndex >= media.length) return;
+    reorderMedia(index, targetIndex);
+  };
+
+  const reorderMedia = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
     setMedia((current) => {
       const reordered = [...current];
-      [reordered[index], reordered[targetIndex]] = [
-        reordered[targetIndex],
-        reordered[index],
-      ];
+      const [movedItem] = reordered.splice(fromIndex, 1);
+      reordered.splice(toIndex, 0, movedItem);
       return reordered;
     });
   };
 
+  const deleteStoredMedia = async (src: string) => {
+    let response: Response;
+    try {
+      response = await fetch("/api/admin/media-upload", {
+        method: "DELETE",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ src }),
+      });
+    } catch {
+      throw new Error("Could not reach the app to remove media from storage. Check your connection and try again.");
+    }
+
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      throw new Error(result.error ?? "Could not remove media from storage.");
+    }
+    return result.deleted === true;
+  };
+
+  const removeMedia = async (index: number) => {
+    const src = media[index].src.trim();
+    setError(null);
+
+    if (!src) {
+      setMedia((current) => {
+        const next = current.filter((_, itemIndex) => itemIndex !== index);
+        return next.length ? next : [{ src: "", type: "image" }];
+      });
+      return;
+    }
+
+    setUploadingIndex(index);
+    try {
+      if (uploadedMedia.current.has(src)) {
+        await deleteStoredMedia(src);
+        uploadedMedia.current.delete(src);
+      } else {
+        setPendingDeletions((current) =>
+          current.includes(src) ? current : [...current, src]
+        );
+      }
+      setMedia((current) => {
+        const next = current.filter((_, itemIndex) => itemIndex !== index);
+        return next.length ? next : [{ src: "", type: "image" }];
+      });
+    } catch (removeError) {
+      setError(
+        removeError instanceof Error
+          ? removeError.message
+          : "Could not remove media."
+      );
+    } finally {
+      setUploadingIndex(null);
+    }
+  };
+
   const uploadMedia = async (index: number, file: File) => {
+    const previousSrc = media[index].src.trim();
     setError(null);
     setUploadingIndex(index);
     try {
@@ -88,6 +157,35 @@ export default function ProductForm({
         throw new Error(`R2 rejected the upload (${uploadResponse.status}). Check the bucket, token permissions, and signed upload settings.`);
       }
 
+      if (previousSrc && uploadedMedia.current.has(previousSrc)) {
+        try {
+          await deleteStoredMedia(previousSrc);
+        } catch (deleteError) {
+          let cleanupMessage = "";
+          try {
+            const deletedNewUpload = await deleteStoredMedia(signedUpload.publicUrl);
+            if (!deletedNewUpload) {
+              cleanupMessage = " The newly uploaded file could not be confirmed deleted.";
+            }
+          } catch (cleanupError) {
+            cleanupMessage = ` The newly uploaded file could not be cleaned up: ${
+              cleanupError instanceof Error ? cleanupError.message : "unknown storage error"
+            }`;
+          }
+          throw new Error(
+            `Could not replace the existing media: ${
+              deleteError instanceof Error ? deleteError.message : "storage deletion failed"
+            }${cleanupMessage}`
+          );
+        }
+        uploadedMedia.current.delete(previousSrc);
+      } else if (previousSrc) {
+        setPendingDeletions((current) =>
+          current.includes(previousSrc) ? current : [...current, previousSrc]
+        );
+      }
+
+      uploadedMedia.current.add(signedUpload.publicUrl);
       updateMedia(index, { src: signedUpload.publicUrl });
     } catch (uploadError) {
       setError(uploadError instanceof Error ? uploadError.message : "Upload failed.");
@@ -96,7 +194,7 @@ export default function ProductForm({
     }
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!name.trim()) return setError("Product name is required.");
     if (!price.trim()) return setError("Price is required.");
@@ -112,11 +210,46 @@ export default function ProductForm({
     }
 
     setError(null);
-    onSubmit({
+    const draft = {
       name: name.trim(),
       price: price.trim(),
       media: cleanMedia.map((item) => ({ ...item, src: item.src.trim() })),
-    });
+    };
+
+    try {
+      const saved = await onSubmit(draft);
+      if (!saved) return;
+
+      uploadedMedia.current.clear();
+      const mediaSources = new Set(draft.media.map((item) => item.src));
+      const sourcesToDelete = pendingDeletions.filter(
+        (src) => !mediaSources.has(src)
+      );
+      const failedDeletions: string[] = [];
+      for (const src of sourcesToDelete) {
+        try {
+          await deleteStoredMedia(src);
+        } catch {
+          failedDeletions.push(src);
+        }
+      }
+      setPendingDeletions(failedDeletions);
+
+      if (failedDeletions.length > 0) {
+        setError(
+          `Product saved, but ${failedDeletions.length} removed media file${failedDeletions.length === 1 ? "" : "s"} could not be deleted from R2. Save again to retry.`
+        );
+        return;
+      }
+
+      onSuccess?.();
+    } catch (submitError) {
+      setError(
+        submitError instanceof Error
+          ? submitError.message
+          : "Could not save the product."
+      );
+    }
   };
 
   return (
@@ -177,9 +310,37 @@ export default function ProductForm({
 
           <div className="grid gap-3">
             {media.map((item, index) => (
-              <div key={`${index}-${item.type}`} className="border border-ink/10 bg-white p-3">
+              <div
+                key={`${index}-${item.type}`}
+                onDragOver={(event) => {
+                  if (draggingIndex !== null && uploadingIndex === null) {
+                    event.preventDefault();
+                  }
+                }}
+                onDrop={(event) => {
+                  event.preventDefault();
+                  if (draggingIndex !== null && uploadingIndex === null) {
+                    reorderMedia(draggingIndex, index);
+                  }
+                  setDraggingIndex(null);
+                }}
+                className={`border border-ink/10 bg-white p-3 transition-opacity ${
+                  draggingIndex === index ? "opacity-50" : ""
+                }`}
+              >
                 <div className="mb-2 flex items-center justify-between">
-                  <span className="text-[10px] uppercase tracking-[0.12em] text-ink-soft">
+                  <span
+                    draggable={uploadingIndex === null}
+                    onDragStart={(event) => {
+                      setDraggingIndex(index);
+                      event.dataTransfer.effectAllowed = "move";
+                      event.dataTransfer.setData("text/plain", String(index));
+                    }}
+                    onDragEnd={() => setDraggingIndex(null)}
+                    className="cursor-grab touch-none text-[10px] uppercase tracking-[0.12em] text-ink-soft active:cursor-grabbing"
+                    title="Drag to reorder media"
+                  >
+                    &#8942;&#8942;{" "}
                     {item.type} {index + 1}
                   </span>
                   <div className="flex items-center gap-1">
@@ -203,7 +364,7 @@ export default function ProductForm({
                     </button>
                     <button
                       type="button"
-                      onClick={() => setMedia((current) => current.filter((_, itemIndex) => itemIndex !== index))}
+                      onClick={() => void removeMedia(index)}
                       disabled={uploadingIndex !== null}
                       aria-label={`Remove media ${index + 1}`}
                       className="h-7 w-7 text-ink-soft hover:text-red-700"
@@ -218,8 +379,14 @@ export default function ProductForm({
                       <select
                         aria-label={`Media type ${index + 1}`}
                         value={item.type}
-                        disabled={uploadingIndex !== null}
-                        onChange={(event) => updateMedia(index, { type: event.target.value as ProductMediaItem["type"], src: "" })}
+                        disabled={uploadingIndex !== null || Boolean(item.src.trim())}
+                        title={item.src.trim() ? "Remove this item and add a new one to change its type" : undefined}
+                        onChange={(event) => {
+                          if (item.src.trim()) return;
+                          updateMedia(index, {
+                            type: event.target.value as ProductMediaItem["type"],
+                          });
+                        }}
                         className="border border-ink/20 bg-white px-2.5 py-2 text-xs outline-none focus:border-clay"
                       >
                         <option value="image">Image</option>
@@ -234,6 +401,37 @@ export default function ProductForm({
                         aria-label={`${item.type} URL ${index + 1}`}
                       />
                     </div>
+                    {item.src.trim() && (
+                      <p className="text-[10px] text-ink-soft">
+                        To change the media type, remove this item and add a new image or video.
+                      </p>
+                    )}
+
+                    {item.src.trim() ? (
+                      <div className="overflow-hidden rounded border border-ink/10 bg-sand">
+                        <div className="relative aspect-[4/3] w-full overflow-hidden">
+                          {item.type === "video" ? (
+                            <video
+                              src={item.src}
+                              controls
+                              className="h-full w-full object-cover"
+                              preload="metadata"
+                            />
+                          ) : (
+                            <div
+                              aria-label={`${item.type} ${index + 1}`}
+                              className="h-full w-full bg-cover bg-center"
+                              style={{ backgroundImage: `url(${item.src})` }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="flex min-h-24 items-center justify-center border border-dashed border-ink/20 bg-sand px-3 text-center text-[11px] uppercase tracking-[0.12em] text-ink-soft">
+                        No {item.type} selected
+                      </div>
+                    )}
+
                     <label className={`flex cursor-pointer items-center gap-2 text-[11px] text-ink-soft hover:text-ink ${uploadingIndex !== null ? "pointer-events-none opacity-50" : ""}`}>
                       <input
                         type="file"

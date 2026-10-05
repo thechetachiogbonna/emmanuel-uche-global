@@ -28,8 +28,11 @@ export default function EditProductForm({
           const result = await updateProductAction(productId, collectionSlug, draft);
           if (!result.ok) {
             setError(result.error);
-            return;
+            return false;
           }
+          return true;
+        }}
+        onSuccess={() => {
           router.push(`/admin/collections/${collectionSlug}`);
           router.refresh();
         }}

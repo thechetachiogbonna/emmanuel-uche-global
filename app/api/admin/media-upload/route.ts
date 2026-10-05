@@ -1,5 +1,9 @@
 import { randomUUID } from "node:crypto";
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
@@ -31,6 +35,41 @@ function getStorageConfig() {
       credentials: { accessKeyId, secretAccessKey },
     }),
   };
+}
+
+function getManagedMediaKey(src: string, publicUrl: string) {
+  try {
+    const base = new URL(publicUrl);
+    const mediaUrl = new URL(src);
+    const basePath = base.pathname.replace(/\/$/, "");
+    const mediaPrefix = `${basePath}/product-media/`;
+
+    if (
+      mediaUrl.origin !== base.origin ||
+      mediaUrl.username ||
+      mediaUrl.password ||
+      mediaUrl.search ||
+      mediaUrl.hash ||
+      !mediaUrl.pathname.startsWith(mediaPrefix)
+    ) {
+      return null;
+    }
+
+    const encodedKey = mediaUrl.pathname.slice(basePath.length + 1);
+    const segments = encodedKey.split("/").map((segment) => decodeURIComponent(segment));
+    if (
+      segments.some((segment) => !segment || segment === "." || segment === ".." || /[\\/]/.test(segment))
+    ) {
+      return null;
+    }
+
+    const key = segments.join("/");
+    return /^product-media\/[0-9a-f-]{36}\.(?:jpeg|png|webp|avif|mp4|webm|mov)$/.test(key)
+      ? key
+      : null;
+  } catch {
+    return null;
+  }
 }
 
 export async function POST(request: Request) {
@@ -87,4 +126,50 @@ export async function POST(request: Request) {
     .join("/")}`;
 
   return NextResponse.json({ uploadUrl, publicUrl });
+}
+
+export async function DELETE(request: Request) {
+  const user = await getCurrentUser();
+  if (!user || user.role !== "admin") {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
+  let input: { src?: unknown };
+  try {
+    input = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Invalid media deletion request." }, { status: 400 });
+  }
+
+  if (typeof input.src !== "string" || !input.src.trim()) {
+    return NextResponse.json({ error: "Media URL is required." }, { status: 400 });
+  }
+
+  const config = getStorageConfig();
+  if (!config) {
+    return NextResponse.json(
+      { error: "R2 storage is not configured on the server." },
+      { status: 503 }
+    );
+  }
+
+  const key = getManagedMediaKey(input.src, config.publicUrl);
+  if (!key) return NextResponse.json({ deleted: false });
+
+  try {
+    await config.client.send(
+      new DeleteObjectCommand({
+        Bucket: config.bucketName,
+        Key: key,
+      })
+    );
+  } catch (error) {
+    console.error("Could not delete product media from R2:", error);
+    return NextResponse.json(
+      { error: "Could not delete media from R2." },
+      { status: 502 }
+    );
+  }
+
+  return NextResponse.json({ deleted: true });
 }

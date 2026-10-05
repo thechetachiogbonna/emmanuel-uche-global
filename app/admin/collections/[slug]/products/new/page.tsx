@@ -30,8 +30,11 @@ export default function NewProductPage() {
           const result = await createProductAction(params.slug, draft);
           if (!result.ok) {
             setError(result.error);
-            return;
+            return false;
           }
+          return true;
+        }}
+        onSuccess={() => {
           router.push(`/admin/collections/${params.slug}`);
           router.refresh();
         }}
