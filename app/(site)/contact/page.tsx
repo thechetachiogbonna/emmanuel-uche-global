@@ -27,8 +27,9 @@ export default async function ContactPage() {
         description="Questions about orders, made-to-order pieces, or stockist partnerships — we'd love to hear from you."
         primaryCta={{ label: "Send a Message", href: "#contact-form" }}
         secondaryCta={{ label: "Back to Home", href: "/" }}
-        image="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=1600&q=80"
-        imageAlt="Emmanuel Uche Global studio in Aba"
+        image="/images/contact-showroom.jpg"
+        imagePosition="center 18%"
+        imageAlt="Emmanuel Uche Global garments displayed in the showroom"
       />
       <Marquee />
       <ContactSection

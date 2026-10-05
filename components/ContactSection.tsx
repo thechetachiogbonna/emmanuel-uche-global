@@ -37,8 +37,8 @@ export default function ContactSection({ settings }: { settings: Settings }) {
         <div className="md:col-span-5">
           <div className="aspect-[4/5] overflow-hidden mb-10 md:mb-0">
             <img
-              src="https://images.unsplash.com/photo-1529139574466-a303027c1d8b?w=900&q=80"
-              alt="Emmanuel Uche Global studio"
+              src="/images/contact-studio-team.jpg"
+              alt="Emmanuel Uche Global team member in the showroom"
               className="w-full h-full object-cover"
             />
           </div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 export type MediaItem = {
   src: string;
@@ -12,13 +12,16 @@ export default function MediaCarousel({
   items,
   label = "Media gallery",
   variant = "editorial",
+  advanceOnVideoEnd = false,
 }: {
   items: MediaItem[];
   label?: string;
   variant?: "editorial" | "product";
+  advanceOnVideoEnd?: boolean;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const startX = useRef<number | null>(null);
+  const videoRefs = useRef<(HTMLVideoElement | null)[]>([]);
   const slides = items.filter((item) => item.src.trim());
   const currentIndex = Math.min(activeIndex, slides.length - 1);
 
@@ -28,6 +31,21 @@ export default function MediaCarousel({
 
   const goNext = () => goTo(currentIndex + 1);
   const goPrevious = () => goTo(currentIndex - 1);
+
+  useEffect(() => {
+    if (!advanceOnVideoEnd) return;
+
+    const activeVideo = videoRefs.current[currentIndex];
+    if (!activeVideo) return;
+
+    videoRefs.current.forEach((video) => video?.pause());
+    activeVideo.currentTime = 0;
+    void activeVideo.play().catch((error: unknown) => {
+      console.error("Unable to play the active carousel video.", error);
+    });
+
+    return () => activeVideo.pause();
+  }, [advanceOnVideoEnd, currentIndex]);
 
   if (slides.length === 0) return null;
 
@@ -74,11 +92,16 @@ export default function MediaCarousel({
           >
             {item.type === "video" ? (
               <video
+                ref={(video) => {
+                  videoRefs.current[index] = video;
+                }}
                 className={`block h-full w-full ${variant === "product" ? "object-contain" : "object-cover"}`}
-                autoPlay={index === currentIndex}
+                autoPlay={index === currentIndex && !advanceOnVideoEnd}
+                preload={index === currentIndex ? "metadata" : "none"}
                 muted
-                loop
+                loop={!advanceOnVideoEnd}
                 playsInline
+                onEnded={advanceOnVideoEnd ? goNext : undefined}
                 aria-label={item.alt ?? `${label} ${index + 1}`}
               >
                 <source

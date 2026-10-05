@@ -7,6 +7,7 @@ type PageHeroProps = {
   primaryCta?: { label: string; href: string };
   secondaryCta?: { label: string; href: string };
   image?: string;
+  imagePosition?: string;
   imageAlt?: string;
   videos?: string[];
 };
@@ -18,6 +19,7 @@ export default function PageHero({
   primaryCta,
   secondaryCta,
   image,
+  imagePosition,
   imageAlt,
   videos,
 }: PageHeroProps) {
@@ -89,6 +91,7 @@ export default function PageHero({
             <img
               src={image}
               alt={imageAlt ?? ""}
+              style={imagePosition ? { objectPosition: imagePosition } : undefined}
               className="h-full w-full object-cover"
             />
           )}

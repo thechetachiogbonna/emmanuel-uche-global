@@ -1,4 +1,5 @@
 import Link from "next/link";
+import MediaCarousel from "@/components/MediaCarousel";
 
 export default function MadeToOrder() {
   return (
@@ -70,12 +71,29 @@ export default function MadeToOrder() {
           </Link>
         </div>
 
-        {/* Right Column: Close-up Image */}
+        {/* Right Column: Made-to-order videos */}
         <div className="md:col-span-5 md:col-start-8 order-1 md:order-2 aspect-[4/5] overflow-hidden bg-sand">
-          <img
-            src="https://images.unsplash.com/photo-1598257006458-087169a1f08d?w=900&q=80"
-            alt="Tailoring craftsmanship details, measuring tape and chalk"
-            className="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+          <MediaCarousel
+            label="Made-to-order studio videos"
+            variant="product"
+            advanceOnVideoEnd
+            items={[
+              {
+                src: "/videos/made-to-order-1.mp4",
+                type: "video",
+                alt: "Emmanuel Uche Global made-to-order studio video 1",
+              },
+              {
+                src: "/videos/made-to-order-2.mp4",
+                type: "video",
+                alt: "Emmanuel Uche Global made-to-order studio video 2",
+              },
+              {
+                src: "/videos/made-to-order-3.mp4",
+                type: "video",
+                alt: "Emmanuel Uche Global made-to-order studio video 3",
+              },
+            ]}
           />
         </div>
       </div>
