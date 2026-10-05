@@ -166,6 +166,7 @@ async function main() {
         id: newId("user"),
         name: c.name,
         email: c.email,
+        emailVerified: false,
       })
       .onConflictDoNothing({ target: users.email })
       .returning({ id: users.id });
