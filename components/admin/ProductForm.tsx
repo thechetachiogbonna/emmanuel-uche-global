@@ -29,6 +29,7 @@ export default function ProductForm({
     getDefaultMedia(initial?.media)
   );
   const [error, setError] = useState<string | null>(null);
+  const [mediaError, setMediaError] = useState<string | null>(null);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [pendingDeletions, setPendingDeletions] = useState<string[]>([]);
@@ -42,11 +43,30 @@ export default function ProductForm({
     }));
 
   const updateMedia = (index: number, update: Partial<ProductMediaItem>) => {
+    setMediaError(null);
     setMedia((current) =>
       current.map((item, itemIndex) =>
         itemIndex === index ? { ...item, ...update } : item
       )
     );
+  };
+
+  const addMedia = (type: ProductMediaItem["type"]) => {
+    if (uploadingIndex !== null) {
+      setMediaError("Wait for the current upload to finish before adding another media box.");
+      return;
+    }
+
+    const emptyIndex = media.findIndex((item) => !item.src.trim());
+    if (emptyIndex !== -1) {
+      setMediaError(
+        `Media box ${emptyIndex + 1} is empty. Upload a file or enter a media URL before adding another box.`
+      );
+      return;
+    }
+
+    setMediaError(null);
+    setMedia((current) => [...current, { src: "", type }]);
   };
 
   const moveMedia = (index: number, direction: -1 | 1) => {
@@ -293,18 +313,25 @@ export default function ProductForm({
                 Add images or videos and arrange their display order.
               </p>
             </div>
-            <div className="flex shrink-0 gap-2">
-              {(["image", "video"] as const).map((type) => (
-                <button
-                  key={type}
-                  type="button"
-                  onClick={() => setMedia((current) => [...current, { src: "", type }])}
-                  disabled={type === "video" && videoCount >= 2}
-                  className="border border-ink/20 px-2.5 py-2 text-[10px] uppercase tracking-wide hover:border-ink disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  + {type}
-                </button>
-              ))}
+            <div className="flex shrink-0 flex-col items-end gap-1.5">
+              <div className="flex gap-2">
+                {(["image", "video"] as const).map((type) => (
+                  <button
+                    key={type}
+                    type="button"
+                    onClick={() => addMedia(type)}
+                    disabled={type === "video" && videoCount >= 2}
+                    className="border border-ink/20 px-2.5 py-2 text-[10px] uppercase tracking-wide hover:border-ink disabled:cursor-not-allowed disabled:opacity-40"
+                  >
+                    + {type}
+                  </button>
+                ))}
+              </div>
+              {mediaError && (
+                <p className="max-w-64 text-right text-[11px] text-red-700" role="alert">
+                  {mediaError}
+                </p>
+              )}
             </div>
           </div>
 
@@ -373,10 +400,8 @@ export default function ProductForm({
                     </button>
                   </div>
                 </div>
-                <div className="grid gap-2 sm:grid-cols-[110px_1fr]">
-                  <div className="grid min-w-0 gap-2">
-                    <div className="grid gap-2 sm:grid-cols-[110px_1fr]">
-                      <select
+                <div className="grid min-w-0 gap-3">
+                  <select
                         aria-label={`Media type ${index + 1}`}
                         value={item.type}
                         disabled={uploadingIndex !== null || Boolean(item.src.trim())}
@@ -387,19 +412,37 @@ export default function ProductForm({
                             type: event.target.value as ProductMediaItem["type"],
                           });
                         }}
-                        className="border border-ink/20 bg-white px-2.5 py-2 text-xs outline-none focus:border-clay"
+                        className="w-full border border-ink/20 bg-white px-2.5 py-2 text-xs outline-none focus:border-clay sm:w-40"
                       >
                         <option value="image">Image</option>
                         <option value="video" disabled={item.type !== "video" && videoCount >= 2}>Video</option>
-                      </select>
+                  </select>
+                    <div className="rounded border border-ink/15 bg-ivory p-3">
+                      <label
+                        htmlFor={`media-url-${index}`}
+                        className="block text-[11px] font-semibold uppercase tracking-[0.1em] text-ink"
+                      >
+                        Add {item.type} by URL
+                      </label>
+                      <p className="mt-1 text-[11px] text-ink-soft">
+                        Paste a direct link to your {item.type} below.
+                      </p>
                       <input
+                        id={`media-url-${index}`}
                         value={item.src}
-                        onChange={(event) => updateMedia(index, { src: event.target.value })}
+                        onChange={(event) =>
+                          updateMedia(index, { src: event.target.value })
+                        }
                         disabled={uploadingIndex !== null}
-                        className="min-w-0 border border-ink/20 px-3 py-2 text-sm outline-none focus:border-clay"
-                        placeholder={item.type === "video" ? "Paste a video URL or upload a file" : "Paste an image URL or upload a file"}
+                        className="mt-2 w-full min-w-0 border border-ink/25 bg-white px-3 py-2.5 text-sm outline-none transition-colors focus:border-ink"
+                        placeholder="https://example.com/your-media"
                         aria-label={`${item.type} URL ${index + 1}`}
                       />
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] uppercase tracking-wide text-ink-soft">
+                      <span className="h-px flex-1 bg-ink/10" />
+                      Or upload a file
+                      <span className="h-px flex-1 bg-ink/10" />
                     </div>
                     {item.src.trim() && (
                       <p className="text-[10px] text-ink-soft">
@@ -432,7 +475,7 @@ export default function ProductForm({
                       </div>
                     )}
 
-                    <label className={`flex cursor-pointer items-center gap-2 text-[11px] text-ink-soft hover:text-ink ${uploadingIndex !== null ? "pointer-events-none opacity-50" : ""}`}>
+                  <label className={`flex cursor-pointer items-center gap-2 text-[11px] text-ink-soft hover:text-ink ${uploadingIndex !== null ? "pointer-events-none opacity-50" : ""}`}>
                       <input
                         type="file"
                         accept={item.type === "video" ? "video/mp4,video/webm,video/quicktime" : "image/jpeg,image/png,image/webp,image/avif"}
@@ -445,11 +488,10 @@ export default function ProductForm({
                         }}
                       />
                       <span className="border border-ink/20 px-2.5 py-1.5 uppercase tracking-wide">
-                        {uploadingIndex === index ? "Uploading..." : `Upload ${item.type}`}
+                        {uploadingIndex === index ? "Uploading..." : `Choose ${item.type} file`}
                       </span>
-                      <span>{item.src.startsWith("http") ? "File ready" : "Max 20 MB image / 100 MB video"}</span>
-                    </label>
-                  </div>
+                      <span>Max 20 MB image / 100 MB video</span>
+                  </label>
                 </div>
               </div>
             ))}
