@@ -1,11 +1,47 @@
 "use client";
 
-import { useRef, useState, type FormEvent } from "react";
+import {
+  startTransition,
+  useEffect,
+  useRef,
+  useState,
+  type FormEvent,
+} from "react";
 import MediaCarousel, { type MediaItem } from "@/components/MediaCarousel";
 import type { ProductDraft } from "@/lib/actions/admin-collections";
 import type { ProductMediaItem } from "@/lib/product-media";
 
 type Draft = ProductDraft;
+type SavedDraft = {
+  version: 1;
+  name: string;
+  price: string;
+  media: ProductMediaItem[];
+  pendingDeletions: string[];
+  uploadedMedia: string[];
+};
+
+function isSavedDraft(value: unknown): value is SavedDraft {
+  if (!value || typeof value !== "object") return false;
+  const draft = value as Record<string, unknown>;
+  return (
+    draft.version === 1 &&
+    typeof draft.name === "string" &&
+    typeof draft.price === "string" &&
+    Array.isArray(draft.media) &&
+    draft.media.every(
+      (item) =>
+        item &&
+        typeof item === "object" &&
+        typeof item.src === "string" &&
+        (item.type === "image" || item.type === "video")
+    ) &&
+    Array.isArray(draft.pendingDeletions) &&
+    draft.pendingDeletions.every((src) => typeof src === "string") &&
+    Array.isArray(draft.uploadedMedia) &&
+    draft.uploadedMedia.every((src) => typeof src === "string")
+  );
+}
 
 function getDefaultMedia(media: ProductMediaItem[] | undefined): ProductMediaItem[] {
   const savedMedia = Array.isArray(media) ? media.filter(Boolean) : [];
@@ -14,17 +50,22 @@ function getDefaultMedia(media: ProductMediaItem[] | undefined): ProductMediaIte
 
 export default function ProductForm({
   initial,
+  draftStorageKey,
   onSubmit,
   onSuccess,
   submitLabel,
 }: {
   initial?: Draft;
+  draftStorageKey: string;
   onSubmit: (draft: Draft) => boolean | Promise<boolean>;
   onSuccess?: () => void;
   submitLabel: string;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [price, setPrice] = useState(initial?.price ?? "");
+  const [draftReady, setDraftReady] = useState(false);
+  const [draftRestoreError, setDraftRestoreError] = useState<string | null>(null);
+  const [draftSaveError, setDraftSaveError] = useState<string | null>(null);
   const [media, setMedia] = useState<ProductMediaItem[]>(() =>
     getDefaultMedia(initial?.media)
   );
@@ -34,6 +75,8 @@ export default function ProductForm({
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [pendingDeletions, setPendingDeletions] = useState<string[]>([]);
   const uploadedMedia = useRef(new Set<string>());
+  const submissionSaved = useRef(false);
+  const storageKey = `admin-product-draft:${draftStorageKey}`;
   const videoCount = media.filter((item) => item.type === "video").length;
   const previewMedia: MediaItem[] = media
     .filter((item) => item.src.trim())
@@ -41,6 +84,57 @@ export default function ProductForm({
       ...item,
       alt: `${name.trim() || "Product preview"} image ${index + 1}`,
     }));
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem(storageKey);
+      if (saved) {
+        const parsed: unknown = JSON.parse(saved);
+        if (!isSavedDraft(parsed)) {
+          throw new Error("The saved product draft has an invalid format.");
+        }
+
+        startTransition(() => {
+          setName(parsed.name);
+          setPrice(parsed.price);
+          setMedia(getDefaultMedia(parsed.media));
+          setPendingDeletions(parsed.pendingDeletions);
+          uploadedMedia.current = new Set(parsed.uploadedMedia);
+        });
+      }
+    } catch {
+      startTransition(() => {
+        setDraftRestoreError(
+          "The saved draft could not be restored. Your current changes will still be saved on this device."
+        );
+      });
+    } finally {
+      startTransition(() => setDraftReady(true));
+    }
+  }, [storageKey]);
+
+  useEffect(() => {
+    if (!draftReady || submissionSaved.current) return;
+
+    try {
+      const savedDraft: SavedDraft = {
+        version: 1,
+        name,
+        price,
+        media,
+        pendingDeletions,
+        uploadedMedia: [...uploadedMedia.current],
+      };
+      window.localStorage.setItem(storageKey, JSON.stringify(savedDraft));
+      startTransition(() => setDraftSaveError(null));
+    } catch {
+      startTransition(() => {
+        setDraftSaveError(
+          "Could not save this draft on your device. Keep this page open until you create the product."
+        );
+      });
+    }
+  }, [draftReady, draftStorageKey, media, name, pendingDeletions, price, storageKey]);
 
   const updateMedia = (index: number, update: Partial<ProductMediaItem>) => {
     setMediaError(null);
@@ -240,7 +334,15 @@ export default function ProductForm({
       const saved = await onSubmit(draft);
       if (!saved) return;
 
+      submissionSaved.current = true;
       uploadedMedia.current.clear();
+      try {
+        window.localStorage.removeItem(storageKey);
+      } catch {
+        setDraftSaveError(
+          "The product was saved, but its local draft could not be cleared from this device."
+        );
+      }
       const mediaSources = new Set(draft.media.map((item) => item.src));
       const sourcesToDelete = pendingDeletions.filter(
         (src) => !mediaSources.has(src)
@@ -311,6 +413,9 @@ export default function ProductForm({
               </h2>
               <p className="mt-1 text-[11px] text-ink-soft">
                 Add images or videos and arrange their display order.
+              </p>
+              <p className="mt-1 text-[11px] text-ink-soft">
+                Your form changes and uploaded media are saved automatically on this device.
               </p>
             </div>
             <div className="flex shrink-0 flex-col items-end gap-1.5">
@@ -528,6 +633,16 @@ export default function ProductForm({
         </div>
 
         {error && <p className="text-[13px] text-red-700">{error}</p>}
+        {draftRestoreError && (
+          <p className="text-[12px] text-red-700" role="alert">
+            {draftRestoreError}
+          </p>
+        )}
+        {draftSaveError && (
+          <p className="text-[12px] text-red-700" role="alert">
+            {draftSaveError}
+          </p>
+        )}
 
         <button
           type="submit"

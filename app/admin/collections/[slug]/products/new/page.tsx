@@ -24,6 +24,7 @@ export default function NewProductPage() {
       </h1>
       {error && <p className="text-[13px] text-red-700 mb-4">{error}</p>}
       <ProductForm
+        draftStorageKey={`new:${params.slug}`}
         submitLabel="Create Product"
         onSubmit={async (draft) => {
           setError(null);

@@ -22,6 +22,7 @@ export default function EditProductForm({
       {error && <p className="text-[13px] text-red-700 mb-4">{error}</p>}
       <ProductForm
         initial={initial}
+        draftStorageKey={`edit:${productId}`}
         submitLabel="Save Changes"
         onSubmit={async (draft) => {
           setError(null);
