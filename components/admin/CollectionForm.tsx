@@ -23,6 +23,9 @@ export default function CollectionForm({
 }) {
   const [name, setName] = useState(initial?.name ?? "");
   const [slug, setSlug] = useState(initial?.slug ?? "");
+  const [status, setStatus] = useState<CollectionDraft["status"]>(
+    initial?.status ?? "coming-soon"
+  );
   const [slugTouched, setSlugTouched] = useState(!!initial?.slug);
   const [error, setError] = useState<string | null>(null);
 
@@ -47,6 +50,7 @@ export default function CollectionForm({
     onSubmit({
       name: name.trim(),
       slug: finalSlug,
+      status,
     });
   };
 
@@ -83,6 +87,32 @@ export default function CollectionForm({
           <p className="text-[11px] text-ink-soft mt-1.5">
             /collections/{slugify(slug) || "your-slug"}
             {lockSlug && " — locked, this collection already has products linked to it"}
+          </p>
+        </div>
+
+        <div>
+          <label
+            htmlFor="collection-status"
+            className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2"
+          >
+            Storefront Status
+          </label>
+          <select
+            id="collection-status"
+            value={status}
+            onChange={(e) =>
+              setStatus(
+                e.target.value === "available" ? "available" : "coming-soon"
+              )
+            }
+            disabled={disabled}
+            className="w-full border border-ink/20 bg-white px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
+          >
+            <option value="coming-soon">Coming Soon</option>
+            <option value="available">Available</option>
+          </select>
+          <p className="text-[11px] text-ink-soft mt-1.5">
+            Available collections are visible to customers on the storefront.
           </p>
         </div>
 

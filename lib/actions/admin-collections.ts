@@ -7,6 +7,7 @@ import { collections, products } from "@/lib/db/schema";
 import { slugify } from "@/lib/slug";
 import { requireAdmin } from "@/lib/auth";
 import type { ProductMediaItem } from "@/lib/product-media";
+import type { CollectionStatus } from "@/lib/admin/types";
 
 type ActionResult<T = undefined> =
   | { ok: true; data: T }
@@ -26,7 +27,12 @@ function revalidateStorefront(slug?: string) {
 export type CollectionDraft = {
   name: string;
   slug: string;
+  status: CollectionStatus;
 };
+
+function isCollectionStatus(status: string): status is CollectionStatus {
+  return status === "available" || status === "coming-soon";
+}
 
 export async function createCollectionAction(
   draft: CollectionDraft
@@ -36,6 +42,9 @@ export async function createCollectionAction(
   const slug = slugify(draft.slug || draft.name);
   if (!slug) return { ok: false, error: "Slug is required." };
   if (!draft.name.trim()) return { ok: false, error: "Name is required." };
+  if (!isCollectionStatus(draft.status)) {
+    return { ok: false, error: "Choose a valid collection status." };
+  }
 
   const existing = await db.query.collections.findFirst({
     where: eq(collections.slug, slug),
@@ -46,6 +55,7 @@ export async function createCollectionAction(
     id: newId("col"),
     slug,
     name: draft.name.trim(),
+    status: draft.status,
   });
 
   revalidateStorefront(slug);
@@ -59,11 +69,15 @@ export async function updateCollectionAction(
   await requireAdmin();
 
   if (!draft.name.trim()) return { ok: false, error: "Name is required." };
+  if (!isCollectionStatus(draft.status)) {
+    return { ok: false, error: "Choose a valid collection status." };
+  }
 
   await db
     .update(collections)
     .set({
       name: draft.name.trim(),
+      status: draft.status,
       updatedAt: new Date(),
     })
     .where(eq(collections.slug, currentSlug));
