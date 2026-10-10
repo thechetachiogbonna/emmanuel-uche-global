@@ -102,7 +102,9 @@ export type ProductDraft = {
 function parseNaira(price: string): number | null {
   const digits = price.replace(/[^\d]/g, "");
   if (!digits) return null;
-  return parseInt(digits, 10);
+  const amount = Number(digits);
+  if (!Number.isSafeInteger(amount) || amount > 2_147_483_647) return null;
+  return amount;
 }
 
 function normalizeProductMedia(media: ProductMediaItem[]) {

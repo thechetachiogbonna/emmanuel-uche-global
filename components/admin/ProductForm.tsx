@@ -48,6 +48,14 @@ function getDefaultMedia(media: ProductMediaItem[] | undefined): ProductMediaIte
   return savedMedia.length ? savedMedia : [{ src: "", type: "image" }];
 }
 
+function getPriceDigits(value: string) {
+  return value.replace(/\D/g, "");
+}
+
+function formatPriceDigits(digits: string) {
+  return digits.replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
 export default function ProductForm({
   initial,
   draftStorageKey,
@@ -62,7 +70,9 @@ export default function ProductForm({
   submitLabel: string;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
-  const [price, setPrice] = useState(initial?.price ?? "");
+  const [price, setPrice] = useState(() =>
+    getPriceDigits(initial?.price ?? "")
+  );
   const [draftReady, setDraftReady] = useState(false);
   const [draftRestoreError, setDraftRestoreError] = useState<string | null>(null);
   const [draftSaveError, setDraftSaveError] = useState<string | null>(null);
@@ -96,7 +106,7 @@ export default function ProductForm({
 
         startTransition(() => {
           setName(parsed.name);
-          setPrice(parsed.price);
+          setPrice(getPriceDigits(parsed.price));
           setMedia(getDefaultMedia(parsed.media));
           setPendingDeletions(parsed.pendingDeletions);
           uploadedMedia.current = new Set(parsed.uploadedMedia);
@@ -312,8 +322,11 @@ export default function ProductForm({
     e.preventDefault();
     if (!name.trim()) return setError("Product name is required.");
     if (!price.trim()) return setError("Price is required.");
-    if (!/^₦[\d,]+$/.test(price.trim())) {
-      return setError('Price should look like "₦165,000" — include the ₦ symbol.');
+    if (!/^\d+$/.test(price)) {
+      return setError("Enter the price using numbers only.");
+    }
+    if (Number(price) > 2_147_483_647) {
+      return setError("Price must be less than ₦2,147,483,648.");
     }
 
     const cleanMedia = media.filter((item) => item.src.trim());
@@ -393,15 +406,22 @@ export default function ProductForm({
           <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
             Price
           </label>
-          <input
-            value={price}
-            onChange={(e) => setPrice(e.target.value)}
-            className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
-            placeholder="₦165,000"
-          />
+          <div className="flex w-full border border-ink/20 focus-within:border-clay transition-colors">
+            <span className="flex items-center border-r border-ink/10 px-3 text-sm text-ink-soft">
+              ₦
+            </span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={formatPriceDigits(price)}
+              onChange={(e) => setPrice(getPriceDigits(e.target.value))}
+              className="min-w-0 flex-1 px-3 py-2.5 text-sm outline-none"
+              placeholder="165,000"
+              aria-label="Price in Nigerian naira"
+            />
+          </div>
           <p className="text-[11px] text-ink-soft mt-1.5">
-            Matches how it&apos;ll display on the site — include the ₦ and
-            commas.
+            Enter the amount in naira. Commas and the ₦ symbol are added automatically.
           </p>
         </div>
 
@@ -625,7 +645,7 @@ export default function ProductForm({
                   {name.trim() || "Product name"}
                 </span>
                 <span className="shrink-0 text-[13px] text-clay">
-                  {price.trim() || "Price"}
+                  {price ? `₦${formatPriceDigits(price)}` : "Price"}
                 </span>
               </div>
             </div>
