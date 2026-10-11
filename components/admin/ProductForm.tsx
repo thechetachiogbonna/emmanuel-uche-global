@@ -81,11 +81,15 @@ export default function ProductForm({
   );
   const [error, setError] = useState<string | null>(null);
   const [mediaError, setMediaError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [hasSubmittedSuccessfully, setHasSubmittedSuccessfully] = useState(false);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [pendingDeletions, setPendingDeletions] = useState<string[]>([]);
   const uploadedMedia = useRef(new Set<string>());
+  const submissionInProgress = useRef(false);
   const submissionSaved = useRef(false);
+  const isFormLocked = isSubmitting || hasSubmittedSuccessfully;
   const storageKey = `admin-product-draft:${draftStorageKey}`;
   const videoCount = media.filter((item) => item.type === "video").length;
   const previewMedia: MediaItem[] = media
@@ -320,6 +324,7 @@ export default function ProductForm({
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+    if (submissionInProgress.current || submissionSaved.current) return;
     if (!name.trim()) return setError("Product name is required.");
     if (!price.trim()) return setError("Price is required.");
     if (!/^\d+$/.test(price)) {
@@ -337,6 +342,8 @@ export default function ProductForm({
     }
 
     setError(null);
+    submissionInProgress.current = true;
+    setIsSubmitting(true);
     const draft = {
       name: name.trim(),
       price: price.trim(),
@@ -348,6 +355,7 @@ export default function ProductForm({
       if (!saved) return;
 
       submissionSaved.current = true;
+      setHasSubmittedSuccessfully(true);
       uploadedMedia.current.clear();
       try {
         window.localStorage.removeItem(storageKey);
@@ -372,7 +380,7 @@ export default function ProductForm({
 
       if (failedDeletions.length > 0) {
         setError(
-          `Product saved, but ${failedDeletions.length} removed media file${failedDeletions.length === 1 ? "" : "s"} could not be deleted from R2. Save again to retry.`
+          `Product saved, but ${failedDeletions.length} removed media file${failedDeletions.length === 1 ? "" : "s"} could not be deleted from R2.`
         );
         return;
       }
@@ -384,12 +392,18 @@ export default function ProductForm({
           ? submitError.message
           : "Could not save the product."
       );
+    } finally {
+      submissionInProgress.current = false;
+      setIsSubmitting(false);
     }
   };
 
   return (
     <form onSubmit={handleSubmit} className="max-w-xl">
-      <div className="grid gap-5">
+      <fieldset
+        disabled={isFormLocked}
+        className="m-0 grid min-w-0 gap-5 border-0 p-0"
+      >
         <div>
           <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
             Product Name
@@ -465,16 +479,24 @@ export default function ProductForm({
               <div
                 key={`${index}-${item.type}`}
                 onDragOver={(event) => {
-                  if (draggingIndex !== null && uploadingIndex === null) {
+                  if (
+                    !isFormLocked &&
+                    draggingIndex !== null &&
+                    uploadingIndex === null
+                  ) {
                     event.preventDefault();
                   }
                 }}
                 onDrop={(event) => {
-                  event.preventDefault();
-                  if (draggingIndex !== null && uploadingIndex === null) {
-                    reorderMedia(draggingIndex, index);
-                  }
-                  setDraggingIndex(null);
+                event.preventDefault();
+                if (
+                  !isFormLocked &&
+                  draggingIndex !== null &&
+                  uploadingIndex === null
+                ) {
+                  reorderMedia(draggingIndex, index);
+                }
+                setDraggingIndex(null);
                 }}
                 className={`border border-ink/10 bg-white p-3 transition-opacity ${
                   draggingIndex === index ? "opacity-50" : ""
@@ -482,13 +504,16 @@ export default function ProductForm({
               >
                 <div className="mb-2 flex items-center justify-between">
                   <span
-                    draggable={uploadingIndex === null}
+                    draggable={!isFormLocked && uploadingIndex === null}
                     onDragStart={(event) => {
+                      if (isFormLocked) return;
                       setDraggingIndex(index);
                       event.dataTransfer.effectAllowed = "move";
                       event.dataTransfer.setData("text/plain", String(index));
                     }}
-                    onDragEnd={() => setDraggingIndex(null)}
+                    onDragEnd={() => {
+                      if (!isFormLocked) setDraggingIndex(null);
+                    }}
                     className="cursor-grab touch-none text-[10px] uppercase tracking-[0.12em] text-ink-soft active:cursor-grabbing"
                     title="Drag to reorder media"
                   >
@@ -666,11 +691,27 @@ export default function ProductForm({
 
         <button
           type="submit"
-          className="mt-2 bg-ink text-ivory text-[12px] tracking-[0.14em] uppercase py-3 hover:bg-clay transition-colors"
+          disabled={isFormLocked}
+          aria-busy={isSubmitting}
+          className="mt-2 flex items-center justify-center gap-2 bg-ink text-ivory text-[12px] tracking-[0.14em] uppercase py-3 hover:bg-clay transition-colors disabled:cursor-not-allowed disabled:opacity-60"
         >
-          {submitLabel}
+          {isSubmitting && (
+            <span
+              aria-hidden="true"
+              className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-current border-r-transparent"
+            />
+          )}
+          {isSubmitting
+            ? submitLabel === "Create Product"
+              ? "Creating..."
+              : "Saving..."
+            : hasSubmittedSuccessfully
+              ? submitLabel === "Create Product"
+                ? "Product Created"
+                : "Changes Saved"
+              : submitLabel}
         </button>
-      </div>
+      </fieldset>
     </form>
   );
 }
