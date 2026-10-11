@@ -69,7 +69,15 @@ export default function MediaCarousel({
           return;
         }
         startX.current = event.clientX;
-        event.currentTarget.setPointerCapture(event.pointerId);
+      }}
+      onPointerMove={(event) => {
+        if (
+          startX.current !== null &&
+          Math.abs(event.clientX - startX.current) > 40 &&
+          !event.currentTarget.hasPointerCapture(event.pointerId)
+        ) {
+          event.currentTarget.setPointerCapture(event.pointerId);
+        }
       }}
       onPointerUp={(event) => {
         if (startX.current !== null) {
