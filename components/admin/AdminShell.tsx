@@ -34,7 +34,7 @@ export default function AdminShell({
 
   return (
     <div className="min-h-screen bg-[#FAF8F4] text-ink flex">
-      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-ink/10 bg-white">
+      <aside className="hidden md:fixed md:inset-y-0 md:left-0 md:z-40 md:flex md:w-60 md:flex-col border-r border-ink/10 bg-white md:overflow-y-auto">
         <div className="px-6 py-6 border-b border-ink/10">
           <Image
             src="/images/logo.png"
@@ -97,7 +97,7 @@ export default function AdminShell({
         </button>
       </div>
 
-      <div className="flex-1 flex flex-col min-w-0">
+      <div className="flex-1 flex flex-col min-w-0 md:ml-60">
         <div className="md:hidden h-14" />
         <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white border-t border-ink/10 flex justify-around py-2">
           {NAV.map((item) => (
