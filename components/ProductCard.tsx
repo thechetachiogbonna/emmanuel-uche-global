@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import MediaCarousel, { type MediaItem } from "@/components/MediaCarousel";
 import type { Product } from "@/lib/data";
 
@@ -20,10 +21,20 @@ export default function ProductCard({
   return (
     <div className={`group ${className}`}>
       <div className="relative aspect-10/13 overflow-hidden bg-sand">
-        <MediaCarousel items={media} label={product.name} variant="product" />
+        <MediaCarousel
+          items={media}
+          label={product.name}
+          variant="product"
+          slideHref={`/products/${product.id}`}
+        />
       </div>
       <div className="flex items-center justify-between mt-4 gap-4">
-        <span className="text-[14px] underline-draw">{product.name}</span>
+        <Link
+          href={`/products/${product.id}`}
+          className="text-[14px] underline-draw"
+        >
+          {product.name}
+        </Link>
         <span className="text-[13px] text-clay shrink-0">{product.price}</span>
       </div>
     </div>

@@ -1,4 +1,4 @@
-import { asc, eq, sql } from "drizzle-orm";
+import { and, asc, eq, sql } from "drizzle-orm";
 import { db } from "@/lib/db";
 import { collections as collectionsTable, products as productsTable } from "@/lib/db/schema";
 import { getProductMedia, type ProductMediaItem } from "@/lib/product-media";
@@ -8,6 +8,12 @@ export type Product = {
   name: string;
   price: string;
   media: ProductMediaItem[];
+};
+
+export type ProductDetail = Product & {
+  collectionSlug: string;
+  collectionName: string;
+  collectionSeason: string;
 };
 
 export type Collection = {
@@ -92,6 +98,43 @@ export async function getCollection(slug: string): Promise<Collection | undefine
       price: formatNaira(p.priceNaira),
       media: getProductMedia(p.media),
     })),
+  };
+}
+
+export async function getProductById(id: string): Promise<ProductDetail | undefined> {
+  const [row] = await db
+    .select({
+      id: productsTable.id,
+      name: productsTable.name,
+      priceNaira: productsTable.priceNaira,
+      media: productsTable.media,
+      collectionSlug: collectionsTable.slug,
+      collectionName: collectionsTable.name,
+      collectionSeason: collectionsTable.season,
+    })
+    .from(productsTable)
+    .innerJoin(
+      collectionsTable,
+      eq(productsTable.collectionId, collectionsTable.id)
+    )
+    .where(
+      and(
+        eq(productsTable.id, id),
+        eq(collectionsTable.status, "available")
+      )
+    )
+    .limit(1);
+
+  if (!row) return undefined;
+
+  return {
+    id: row.id,
+    name: row.name,
+    price: formatNaira(row.priceNaira),
+    media: getProductMedia(row.media),
+    collectionSlug: row.collectionSlug,
+    collectionName: row.collectionName,
+    collectionSeason: row.collectionSeason,
   };
 }
 

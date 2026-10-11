@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 
 export type MediaItem = {
   src: string;
@@ -13,11 +14,13 @@ export default function MediaCarousel({
   label = "Media gallery",
   variant = "editorial",
   advanceOnVideoEnd = false,
+  slideHref,
 }: {
   items: MediaItem[];
   label?: string;
   variant?: "editorial" | "product";
   advanceOnVideoEnd?: boolean;
+  slideHref?: string;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const startX = useRef<number | null>(null);
@@ -83,42 +86,58 @@ export default function MediaCarousel({
       }}
       style={{ cursor: "grab" }}
     >
-      {slides.map((item, index) => (
+      {slides.map((item, index) => {
+        const media =
+          item.type === "video" ? (
+            <video
+              ref={(video) => {
+                videoRefs.current[index] = video;
+              }}
+              className={`block h-full w-full ${variant === "product" ? "object-contain" : "object-cover"}`}
+              autoPlay={index === currentIndex && !advanceOnVideoEnd}
+              preload={index === currentIndex ? "metadata" : "none"}
+              muted
+              loop={!advanceOnVideoEnd}
+              playsInline
+              onEnded={advanceOnVideoEnd ? goNext : undefined}
+              aria-label={item.alt ?? `${label} ${index + 1}`}
+            >
+              <source
+                src={item.src}
+                type={item.src.toLowerCase().includes(".webm") ? "video/webm" : item.src.toLowerCase().includes(".mov") ? "video/quicktime" : "video/mp4"}
+              />
+            </video>
+          ) : (
+            <img
+              src={item.src}
+              alt={item.alt ?? ""}
+              className="block h-full w-full object-cover"
+              draggable={false}
+            />
+          );
+
+        return (
           <div
             key={`${item.src}-${index}`}
             aria-hidden={index !== currentIndex}
             className="absolute inset-0 h-full w-full transition-transform duration-500 ease-out"
             style={{ transform: `translateX(${(index - currentIndex) * 100}%)` }}
           >
-            {item.type === "video" ? (
-              <video
-                ref={(video) => {
-                  videoRefs.current[index] = video;
-                }}
-                className={`block h-full w-full ${variant === "product" ? "object-contain" : "object-cover"}`}
-                autoPlay={index === currentIndex && !advanceOnVideoEnd}
-                preload={index === currentIndex ? "metadata" : "none"}
-                muted
-                loop={!advanceOnVideoEnd}
-                playsInline
-                onEnded={advanceOnVideoEnd ? goNext : undefined}
-                aria-label={item.alt ?? `${label} ${index + 1}`}
+            {slideHref ? (
+              <Link
+                href={slideHref}
+                aria-label={`View ${label}`}
+                tabIndex={index === currentIndex ? 0 : -1}
+                className="absolute inset-0 block"
               >
-                <source
-                  src={item.src}
-                  type={item.src.toLowerCase().includes(".webm") ? "video/webm" : item.src.toLowerCase().includes(".mov") ? "video/quicktime" : "video/mp4"}
-                />
-              </video>
+                {media}
+              </Link>
             ) : (
-              <img
-                src={item.src}
-                alt={item.alt ?? ""}
-                className="block h-full w-full object-cover"
-                draggable={false}
-              />
+              media
             )}
           </div>
-      ))}
+        );
+      })}
 
       {slides.length > 1 && (
         <>
@@ -146,7 +165,7 @@ export default function MediaCarousel({
               </button>
             </>
           )}
-          <div className={`absolute left-1/2 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 ${variant === "product" ? "bottom-3" : "bottom-10"}`}>
+          <div className={`absolute left-1/2 z-10 flex max-w-[calc(100%-1rem)] -translate-x-1/2 items-center gap-2 ${variant === "product" ? "bottom-3" : "bottom-10"}`}>
             <div className="flex min-w-0 items-center gap-1.5 overflow-x-auto scrollbar-hide py-1">
             {slides.map((item, index) => (
               <button
