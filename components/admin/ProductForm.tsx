@@ -150,6 +150,34 @@ export default function ProductForm({
     }
   }, [draftReady, draftStorageKey, media, name, pendingDeletions, price, storageKey]);
 
+  useEffect(() => {
+    if (draggingIndex === null || isFormLocked || uploadingIndex !== null) {
+      return;
+    }
+
+    const edgeSize = 100;
+    const maxScrollStep = 20;
+    const handleDragOver = (event: DragEvent) => {
+      const distanceFromTop = event.clientY;
+      const distanceFromBottom = window.innerHeight - event.clientY;
+
+      if (distanceFromTop < edgeSize) {
+        const step = Math.ceil(
+          ((edgeSize - distanceFromTop) / edgeSize) * maxScrollStep
+        );
+        window.scrollBy({ top: -step, behavior: "instant" });
+      } else if (distanceFromBottom < edgeSize) {
+        const step = Math.ceil(
+          ((edgeSize - distanceFromBottom) / edgeSize) * maxScrollStep
+        );
+        window.scrollBy({ top: step, behavior: "instant" });
+      }
+    };
+
+    window.addEventListener("dragover", handleDragOver);
+    return () => window.removeEventListener("dragover", handleDragOver);
+  }, [draggingIndex, isFormLocked, uploadingIndex]);
+
   const updateMedia = (index: number, update: Partial<ProductMediaItem>) => {
     setMediaError(null);
     setMedia((current) =>
