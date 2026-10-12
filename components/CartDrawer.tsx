@@ -108,7 +108,7 @@ export default function CartDrawer() {
           ) : (
             <div className="px-6 py-4 divide-y divide-gray-100">
               {items.map((item) => (
-                <div key={item.productId} className="flex gap-4 py-5">
+                <div key={`${item.productId}:${item.size ?? ""}`} className="flex gap-4 py-5">
                   <img
                     src={item.img1}
                     alt={item.name}
@@ -121,7 +121,7 @@ export default function CartDrawer() {
                           {item.name}
                         </h3>
                         <button
-                          onClick={() => removeItem(item.productId)}
+                          onClick={() => removeItem(item.productId, item.size)}
                           aria-label={`Remove ${item.name}`}
                           className="text-gray-400 hover:text-gray-700 transition-colors p-0.5 shrink-0"
                         >
@@ -130,14 +130,18 @@ export default function CartDrawer() {
                           </svg>
                         </button>
                       </div>
-                      <p className="text-[11px] text-gray-400 mt-0.5">XS</p>
+                      {item.size && (
+                        <p className="text-[11px] text-gray-400 mt-0.5">
+                          Size: {item.size}
+                        </p>
+                      )}
                     </div>
 
                     <div className="flex items-center justify-between mt-3">
                       {/* Quantity Widget */}
                       <div className="flex items-center border border-gray-200">
                         <button
-                          onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                          onClick={() => updateQuantity(item.productId, item.quantity - 1, item.size)}
                           className="w-7 h-7 text-xs text-gray-500 hover:text-black transition-colors"
                         >
                           −
@@ -146,7 +150,7 @@ export default function CartDrawer() {
                           {item.quantity}
                         </span>
                         <button
-                          onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                          onClick={() => updateQuantity(item.productId, item.quantity + 1, item.size)}
                           className="w-7 h-7 text-xs text-gray-500 hover:text-black transition-colors"
                         >
                           +

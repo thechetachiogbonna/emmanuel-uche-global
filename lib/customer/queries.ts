@@ -24,6 +24,7 @@ export async function getMyOrders(customerId: string) {
     items: o.items.map((i) => ({
       name: i.productName,
       price: formatNaira(i.priceNaira),
+      size: i.size,
       quantity: i.quantity,
       img1: i.img1,
     })),
@@ -47,6 +48,7 @@ export async function getMyOrder(customerId: string, orderId: string) {
     items: row.items.map((i) => ({
       name: i.productName,
       price: formatNaira(i.priceNaira),
+      size: i.size,
       quantity: i.quantity,
       img1: i.img1,
     })),

@@ -13,9 +13,11 @@ import type { ProductMediaItem } from "@/lib/product-media";
 
 type Draft = ProductDraft;
 type SavedDraft = {
-  version: 1;
+  version: 1 | 2;
   name: string;
   price: string;
+  description?: string;
+  sizes?: string[];
   media: ProductMediaItem[];
   pendingDeletions: string[];
   uploadedMedia: string[];
@@ -25,9 +27,13 @@ function isSavedDraft(value: unknown): value is SavedDraft {
   if (!value || typeof value !== "object") return false;
   const draft = value as Record<string, unknown>;
   return (
-    draft.version === 1 &&
+    (draft.version === 1 || draft.version === 2) &&
     typeof draft.name === "string" &&
     typeof draft.price === "string" &&
+    (draft.description === undefined || typeof draft.description === "string") &&
+    (draft.sizes === undefined ||
+      (Array.isArray(draft.sizes) &&
+        draft.sizes.every((size) => typeof size === "string"))) &&
     Array.isArray(draft.media) &&
     draft.media.every(
       (item) =>
@@ -73,6 +79,10 @@ export default function ProductForm({
   const [price, setPrice] = useState(() =>
     getPriceDigits(initial?.price ?? "")
   );
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [sizesText, setSizesText] = useState(
+    () => initial?.sizes.join(", ") ?? ""
+  );
   const [draftReady, setDraftReady] = useState(false);
   const [draftRestoreError, setDraftRestoreError] = useState<string | null>(null);
   const [draftSaveError, setDraftSaveError] = useState<string | null>(null);
@@ -111,6 +121,8 @@ export default function ProductForm({
         startTransition(() => {
           setName(parsed.name);
           setPrice(getPriceDigits(parsed.price));
+          setDescription(parsed.description ?? "");
+          setSizesText(parsed.sizes?.join(", ") ?? "");
           setMedia(getDefaultMedia(parsed.media));
           setPendingDeletions(parsed.pendingDeletions);
           uploadedMedia.current = new Set(parsed.uploadedMedia);
@@ -132,9 +144,11 @@ export default function ProductForm({
 
     try {
       const savedDraft: SavedDraft = {
-        version: 1,
+        version: 2,
         name,
         price,
+        description,
+        sizes: sizesText.split(",").map((size) => size.trim()).filter(Boolean),
         media,
         pendingDeletions,
         uploadedMedia: [...uploadedMedia.current],
@@ -148,7 +162,7 @@ export default function ProductForm({
         );
       });
     }
-  }, [draftReady, draftStorageKey, media, name, pendingDeletions, price, storageKey]);
+  }, [description, draftReady, draftStorageKey, media, name, pendingDeletions, price, sizesText, storageKey]);
 
   useEffect(() => {
     if (draggingIndex === null || isFormLocked || uploadingIndex !== null) {
@@ -375,6 +389,8 @@ export default function ProductForm({
     const draft = {
       name: name.trim(),
       price: price.trim(),
+      description: description.trim(),
+      sizes: sizesText.split(",").map((size) => size.trim()).filter(Boolean),
       media: cleanMedia.map((item) => ({ ...item, src: item.src.trim() })),
     };
 
@@ -464,6 +480,43 @@ export default function ProductForm({
           </div>
           <p className="text-[11px] text-ink-soft mt-1.5">
             Enter the amount in naira. Commas and the ₦ symbol are added automatically.
+          </p>
+        </div>
+
+        <div>
+          <label
+            htmlFor="product-description"
+            className="mb-2 block text-[12px] tracking-wide uppercase text-ink-soft"
+          >
+            Product Description
+          </label>
+          <textarea
+            id="product-description"
+            value={description}
+            onChange={(event) => setDescription(event.target.value)}
+            rows={5}
+            maxLength={10_000}
+            className="w-full resize-y border border-ink/20 px-3 py-2.5 text-sm outline-none transition-colors focus:border-clay"
+            placeholder="Describe the piece, its fabric, fit, and styling."
+          />
+        </div>
+
+        <div>
+          <label
+            htmlFor="product-sizes"
+            className="mb-2 block text-[12px] tracking-wide uppercase text-ink-soft"
+          >
+            Available Sizes
+          </label>
+          <input
+            id="product-sizes"
+            value={sizesText}
+            onChange={(event) => setSizesText(event.target.value)}
+            className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none transition-colors focus:border-clay"
+            placeholder="XS, S, M, L, XL, XXL"
+          />
+          <p className="mt-1.5 text-[11px] text-ink-soft">
+            Separate sizes with commas. Leave blank for items without sizes.
           </p>
         </div>
 

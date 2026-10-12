@@ -28,6 +28,8 @@ export async function getAdminCollections() {
       id: p.id,
       name: p.name,
       price: formatNaira(p.priceNaira),
+      description: p.description,
+      sizes: p.sizes,
       media: p.media,
     })),
   }));

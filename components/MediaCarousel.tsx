@@ -15,12 +15,14 @@ export default function MediaCarousel({
   variant = "editorial",
   advanceOnVideoEnd = false,
   slideHref,
+  showThumbnails = false,
 }: {
   items: MediaItem[];
   label?: string;
   variant?: "editorial" | "product";
   advanceOnVideoEnd?: boolean;
   slideHref?: string;
+  showThumbnails?: boolean;
 }) {
   const [activeIndex, setActiveIndex] = useState(0);
   const startX = useRef<number | null>(null);
@@ -56,7 +58,7 @@ export default function MediaCarousel({
     <div
       className={`group/media relative h-full w-full overflow-hidden ${
         variant === "product" ? "bg-sand" : "bg-ivory p-2.5"
-      }`}
+      } ${showThumbnails ? "flex flex-col bg-transparent" : ""}`}
       aria-label={`${label}, ${currentIndex + 1} of ${slides.length}`}
       role="region"
       tabIndex={0}
@@ -94,6 +96,7 @@ export default function MediaCarousel({
       }}
       style={{ cursor: "grab" }}
     >
+      <div className={showThumbnails ? "relative min-h-0 flex-1" : "contents"}>
       {slides.map((item, index) => {
         const media =
           item.type === "video" ? (
@@ -146,8 +149,39 @@ export default function MediaCarousel({
           </div>
         );
       })}
+      </div>
 
-      {slides.length > 1 && (
+      {showThumbnails && slides.length > 1 && (
+        <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
+          {slides.map((item, index) => (
+            <button
+              key={`${item.src}-thumbnail-${index}`}
+              type="button"
+              onClick={() => goTo(index)}
+              aria-label={`Show image ${index + 1}`}
+              aria-current={index === currentIndex ? "true" : undefined}
+              className={`relative h-16 w-12 shrink-0 overflow-hidden border transition-opacity ${
+                index === currentIndex ? "border-ink" : "border-transparent opacity-65 hover:opacity-100"
+              }`}
+            >
+              {item.type === "image" ? (
+                <img
+                  src={item.src}
+                  alt=""
+                  className="h-full w-full object-cover"
+                  draggable={false}
+                />
+              ) : (
+                <span className="flex h-full w-full items-center justify-center bg-sand text-[9px] uppercase tracking-wide">
+                  Video
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {slides.length > 1 && !showThumbnails && (
         <>
           {variant === "product" && (
             <>

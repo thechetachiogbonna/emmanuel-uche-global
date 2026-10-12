@@ -14,6 +14,8 @@ export type ProductDetail = Product & {
   collectionSlug: string;
   collectionName: string;
   collectionSeason: string;
+  description: string;
+  sizes: string[];
 };
 
 export type Collection = {
@@ -107,6 +109,8 @@ export async function getProductById(id: string): Promise<ProductDetail | undefi
       id: productsTable.id,
       name: productsTable.name,
       priceNaira: productsTable.priceNaira,
+      description: productsTable.description,
+      sizes: productsTable.sizes,
       media: productsTable.media,
       collectionSlug: collectionsTable.slug,
       collectionName: collectionsTable.name,
@@ -135,6 +139,8 @@ export async function getProductById(id: string): Promise<ProductDetail | undefi
     collectionSlug: row.collectionSlug,
     collectionName: row.collectionName,
     collectionSeason: row.collectionSeason,
+    description: row.description,
+    sizes: row.sizes,
   };
 }
 
@@ -177,6 +183,7 @@ export async function getProductsByIds(ids: string[]) {
     id: p.id,
     name: p.name,
     priceNaira: p.priceNaira,
+    sizes: p.sizes,
     img1: p.media.find((item) => item.type === "image")?.src ?? "",
   }));
 }

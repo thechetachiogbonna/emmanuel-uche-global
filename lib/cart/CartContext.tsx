@@ -8,15 +8,16 @@ export type CartItem = {
   price: string; // display string, e.g. "₦165,000"
   priceNaira: number; // parsed, used for subtotal math
   img1: string;
+  size: string | null;
   quantity: number;
 };
 
 type CartContextValue = {
   items: CartItem[];
   hydrated: boolean;
-  addItem: (product: { id: string; name: string; price: string; img1: string }) => void;
-  removeItem: (productId: string) => void;
-  updateQuantity: (productId: string, quantity: number) => void;
+  addItem: (product: { id: string; name: string; price: string; img1: string; size?: string | null }, quantity?: number) => void;
+  removeItem: (productId: string, size?: string | null) => void;
+  updateQuantity: (productId: string, quantity: number, size?: string | null) => void;
   clear: () => void;
   subtotalNaira: number;
   itemCount: number;
@@ -55,12 +56,17 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
     }
   }, []);
 
-  const addItem: CartContextValue["addItem"] = useCallback((product) => {
+  const addItem: CartContextValue["addItem"] = useCallback((product, quantity = 1) => {
+    const size = product.size ?? null;
     setItems((prev) => {
-      const existing = prev.find((i) => i.productId === product.id);
+      const existing = prev.find(
+        (i) => i.productId === product.id && (i.size ?? null) === size
+      );
       const next = existing
         ? prev.map((i) =>
-            i.productId === product.id ? { ...i, quantity: i.quantity + 1 } : i
+            i.productId === product.id && (i.size ?? null) === size
+              ? { ...i, quantity: i.quantity + quantity }
+              : i
           )
         : [
             ...prev,
@@ -70,7 +76,8 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               price: product.price,
               priceNaira: parseNaira(product.price),
               img1: product.img1,
-              quantity: 1,
+              size,
+              quantity,
             },
           ];
       try {
@@ -83,19 +90,25 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const removeItem = useCallback(
-    (productId: string) => {
-      persist(items.filter((i) => i.productId !== productId));
+    (productId: string, size: string | null = null) => {
+      persist(items.filter((i) => i.productId !== productId || (i.size ?? null) !== size));
     },
     [items, persist]
   );
 
   const updateQuantity = useCallback(
-    (productId: string, quantity: number) => {
+    (productId: string, quantity: number, size: string | null = null) => {
       if (quantity <= 0) {
-        persist(items.filter((i) => i.productId !== productId));
+        persist(items.filter((i) => i.productId !== productId || (i.size ?? null) !== size));
         return;
       }
-      persist(items.map((i) => (i.productId === productId ? { ...i, quantity } : i)));
+      persist(
+        items.map((i) =>
+          i.productId === productId && (i.size ?? null) === size
+            ? { ...i, quantity }
+            : i
+        )
+      );
     },
     [items, persist]
   );

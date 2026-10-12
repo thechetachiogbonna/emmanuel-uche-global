@@ -43,6 +43,13 @@
       "when": 1791136848102,
       "tag": "0005_remove_collection_image_description",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1791743509852,
+      "tag": "0006_skinny_arachne",
+      "breakpoints": true
     }
   ]
 }

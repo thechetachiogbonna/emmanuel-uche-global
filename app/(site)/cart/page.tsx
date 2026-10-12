@@ -42,7 +42,7 @@ export default function CartPage() {
       <div className="grid md:grid-cols-12 gap-10">
         <div className="md:col-span-8 divide-y divide-ink/10 border-t border-b border-ink/10">
           {items.map((item) => (
-            <div key={item.productId} className="flex gap-5 py-6">
+            <div key={`${item.productId}:${item.size ?? ""}`} className="flex gap-5 py-6">
               <div className="w-24 h-32 bg-sand shrink-0 overflow-hidden">
                 {/* eslint-disable-next-line @next/next/no-img-element -- product images are arbitrary external URLs */}
                 <img
@@ -53,13 +53,20 @@ export default function CartPage() {
               </div>
               <div className="flex-1 flex flex-col justify-between">
                 <div className="flex items-start justify-between gap-4">
-                  <span className="text-[15px]">{item.name}</span>
+                  <div>
+                    <span className="text-[15px]">{item.name}</span>
+                    {item.size && (
+                      <p className="mt-1 text-[12px] text-ink-soft">
+                        Size: {item.size}
+                      </p>
+                    )}
+                  </div>
                   <span className="text-[14px] text-clay shrink-0">{item.price}</span>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="flex items-center border border-ink/20">
                     <button
-                      onClick={() => updateQuantity(item.productId, item.quantity - 1)}
+                      onClick={() => updateQuantity(item.productId, item.quantity - 1, item.size)}
                       className="w-8 h-8 text-sm hover:bg-sand/40 transition-colors"
                       aria-label="Decrease quantity"
                     >
@@ -67,7 +74,7 @@ export default function CartPage() {
                     </button>
                     <span className="w-8 text-center text-[13px]">{item.quantity}</span>
                     <button
-                      onClick={() => updateQuantity(item.productId, item.quantity + 1)}
+                      onClick={() => updateQuantity(item.productId, item.quantity + 1, item.size)}
                       className="w-8 h-8 text-sm hover:bg-sand/40 transition-colors"
                       aria-label="Increase quantity"
                     >
@@ -75,7 +82,7 @@ export default function CartPage() {
                     </button>
                   </div>
                   <button
-                    onClick={() => removeItem(item.productId)}
+                    onClick={() => removeItem(item.productId, item.size)}
                     className="text-[12px] tracking-wide uppercase text-ink-soft hover:text-red-700 transition-colors"
                   >
                     Remove

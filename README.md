@@ -72,6 +72,10 @@ Create an R2 bucket and an S3 API token with read/write access to that bucket. C
 
 The admin uploader accepts JPEG, PNG, WebP, and AVIF images up to 20 MB, plus MP4, WebM, and QuickTime videos up to 100 MB. Each product can contain at most two videos and must include at least one image.
 
+## Product pages
+
+Each product has its own page with a media gallery, price, description, and optional size choices. Edit the description and enter sizes as comma-separated options (for example, `XS, S, M, L, XL`) in the admin product form. Leave sizes blank for items that do not need a size selection. Selected sizes and quantities are saved with the cart and order. Run `npm run db:migrate` after updating to apply the product-detail and order-size fields.
+
 ## Stack notes
 
 - **ORM**: [Drizzle](https://orm.drizzle.team), not Prisma — Prisma's engine binaries need network access this environment didn't have during development, so this was built and verified against Drizzle instead. Functionally equivalent for this project's needs.

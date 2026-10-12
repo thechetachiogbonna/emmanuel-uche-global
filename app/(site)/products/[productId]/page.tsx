@@ -36,8 +36,13 @@ export default async function ProductPage({ params }: Props) {
   return (
     <main className="flex-1 px-6 py-12 md:px-10 md:py-20">
       <div className="mx-auto grid max-w-7xl gap-10 md:grid-cols-2 md:gap-16">
-        <div className="aspect-10/13 overflow-hidden bg-sand">
-          <MediaCarousel items={media} label={product.name} variant="product" />
+        <div className="aspect-10/13 overflow-hidden">
+          <MediaCarousel
+            items={media}
+            label={product.name}
+            variant="product"
+            showThumbnails
+          />
         </div>
 
         <div className="flex flex-col justify-center">
@@ -51,8 +56,22 @@ export default async function ProductPage({ params }: Props) {
             {product.name}
           </h1>
           <p className="mt-4 text-[15px] text-clay">{product.price}</p>
+          <p className="mt-1 text-[13px] text-ink-soft">
+            <span className="underline underline-offset-4">Shipping</span>{" "}
+            calculated at checkout.
+          </p>
           <div className="my-8 border-t border-ink/10" />
           <ProductAddToBag product={product} />
+          {product.description && (
+            <section className="mt-8">
+              <h2 className="mb-4 text-[13px] underline underline-offset-4">
+                Product Details
+              </h2>
+              <div className="whitespace-pre-line text-[13px] leading-relaxed text-ink-soft">
+                {product.description}
+              </div>
+            </section>
+          )}
           <Link
             href={`/collections/${product.collectionSlug}`}
             className="mt-6 text-center text-[11px] uppercase tracking-[0.14em] underline-draw"

@@ -44,6 +44,11 @@ export default async function OrderDetailPage({
             <div className="flex-1 flex items-center justify-between gap-3">
               <div>
                 <div className="text-[14px]">{item.name}</div>
+                {item.size && (
+                  <div className="text-[12px] text-ink-soft">
+                    Size: {item.size}
+                  </div>
+                )}
                 <div className="text-[12px] text-ink-soft">Qty {item.quantity}</div>
               </div>
               <span className="text-[13px] text-clay shrink-0">{item.price}</span>

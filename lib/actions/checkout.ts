@@ -8,7 +8,11 @@ import { getProductsByIds } from "@/lib/data";
 import { initializeTransaction } from "@/lib/paystack";
 import { getBaseUrl } from "@/lib/url";
 
-export type CartLine = { productId: string; quantity: number };
+export type CartLine = {
+  productId: string;
+  quantity: number;
+  size: string | null;
+};
 
 type PlaceOrderResult =
   | { ok: true; orderId: string; authorizationUrl: string }
@@ -29,7 +33,15 @@ export async function placeOrderAction(lines: CartLine[]): Promise<PlaceOrderRes
     return { ok: false, error: "You need to be signed in to place an order." };
   }
 
-  const cleanLines = lines.filter((l) => l.quantity > 0);
+  const cleanLines = lines.filter(
+    (line) =>
+      Number.isSafeInteger(line.quantity) &&
+      line.quantity > 0 &&
+      line.quantity <= 99
+  );
+  if (cleanLines.length !== lines.length) {
+    return { ok: false, error: "Check the quantity of each item in your bag." };
+  }
   if (cleanLines.length === 0) {
     return { ok: false, error: "Your bag is empty." };
   }
@@ -47,6 +59,16 @@ export async function placeOrderAction(lines: CartLine[]): Promise<PlaceOrderRes
       error: "One of the items in your bag is no longer available.",
     };
   }
+  const invalidSize = cleanLines.find((line) => {
+    if (line.size !== null && typeof line.size !== "string") return true;
+    const product = productMap.get(line.productId)!;
+    return product.sizes.length
+      ? !line.size || !product.sizes.includes(line.size)
+      : line.size !== null;
+  });
+  if (invalidSize) {
+    return { ok: false, error: "Choose an available size for each item." };
+  }
 
   let totalNaira = 0;
   let itemCount = 0;
@@ -59,6 +81,7 @@ export async function placeOrderAction(lines: CartLine[]): Promise<PlaceOrderRes
       orderId: "", // filled in below
       productName: product.name,
       priceNaira: product.priceNaira,
+      size: line.size,
       quantity: line.quantity,
       img1: product.img1,
     };

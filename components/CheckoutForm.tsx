@@ -20,7 +20,11 @@ export default function CheckoutForm({ customerName }: { customerName: string })
     setSubmitting(true);
     setError(null);
     const result = await placeOrderAction(
-      items.map((i) => ({ productId: i.productId, quantity: i.quantity }))
+      items.map((i) => ({
+        productId: i.productId,
+        quantity: i.quantity,
+        size: i.size ?? null,
+      }))
     );
     setSubmitting(false);
 
@@ -74,7 +78,7 @@ export default function CheckoutForm({ customerName }: { customerName: string })
         <div className="md:col-span-7">
           <div className="border-t border-ink/10 divide-y divide-ink/10">
             {items.map((item) => (
-              <div key={item.productId} className="flex items-center gap-4 py-4">
+              <div key={`${item.productId}:${item.size ?? ""}`} className="flex items-center gap-4 py-4">
                 {/* eslint-disable-next-line @next/next/no-img-element -- product images are arbitrary external URLs */}
                 <img
                   src={item.img1}
@@ -84,6 +88,11 @@ export default function CheckoutForm({ customerName }: { customerName: string })
                 <div className="flex-1 flex items-center justify-between gap-3">
                   <div>
                     <div className="text-[14px]">{item.name}</div>
+                    {item.size && (
+                      <div className="text-[12px] text-ink-soft">
+                        Size: {item.size}
+                      </div>
+                    )}
                     <div className="text-[12px] text-ink-soft">Qty {item.quantity}</div>
                   </div>
                   <span className="text-[13px] text-clay shrink-0">

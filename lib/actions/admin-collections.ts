@@ -96,6 +96,8 @@ export async function deleteCollectionAction(slug: string): Promise<ActionResult
 export type ProductDraft = {
   name: string;
   price: string; // "₦165,000" — parsed to an integer for storage
+  description: string;
+  sizes: string[];
   media: ProductMediaItem[];
 };
 
@@ -117,6 +119,20 @@ function hasValidVideoCount(media: ProductMediaItem[]) {
   return media.filter((item) => item.type === "video").length <= 2;
 }
 
+function normalizeSizes(sizes: string[]) {
+  return [...new Set(sizes.map((size) => size.trim()).filter(Boolean))];
+}
+
+function validateProductDetails(description: string, sizes: string[]) {
+  if (description.length > 10_000) {
+    return "Product description must be 10,000 characters or fewer.";
+  }
+  if (sizes.length > 20 || sizes.some((size) => size.length > 30)) {
+    return "Add up to 20 size options, each 30 characters or fewer.";
+  }
+  return null;
+}
+
 function isValidMediaUrl(src: string) {
   return /^(https?:\/\/|\/(?!\/))/.test(src);
 }
@@ -132,9 +148,19 @@ export async function createProductAction(
   });
   if (!collection) return { ok: false, error: "Collection not found." };
 
+  if (
+    typeof draft.description !== "string" ||
+    !Array.isArray(draft.sizes) ||
+    !draft.sizes.every((size) => typeof size === "string")
+  ) {
+    return { ok: false, error: "Enter a valid product description and size list." };
+  }
   if (!draft.name.trim()) return { ok: false, error: "Product name is required." };
   const priceNaira = parseNaira(draft.price);
   if (priceNaira === null) return { ok: false, error: "Enter a valid price." };
+  const sizes = normalizeSizes(draft.sizes);
+  const detailsError = validateProductDetails(draft.description, sizes);
+  if (detailsError) return { ok: false, error: detailsError };
   const media = normalizeProductMedia(draft.media);
   if (!hasValidVideoCount(media)) {
     return { ok: false, error: "A product can have no more than two videos." };
@@ -150,6 +176,8 @@ export async function createProductAction(
     collectionId: collection.id,
     name: draft.name.trim(),
     priceNaira,
+    description: draft.description.trim(),
+    sizes,
     media,
   });
 
@@ -164,9 +192,19 @@ export async function updateProductAction(
 ): Promise<ActionResult> {
   await requireAdmin();
 
+  if (
+    typeof draft.description !== "string" ||
+    !Array.isArray(draft.sizes) ||
+    !draft.sizes.every((size) => typeof size === "string")
+  ) {
+    return { ok: false, error: "Enter a valid product description and size list." };
+  }
   if (!draft.name.trim()) return { ok: false, error: "Product name is required." };
   const priceNaira = parseNaira(draft.price);
   if (priceNaira === null) return { ok: false, error: "Enter a valid price." };
+  const sizes = normalizeSizes(draft.sizes);
+  const detailsError = validateProductDetails(draft.description, sizes);
+  if (detailsError) return { ok: false, error: detailsError };
   const media = normalizeProductMedia(draft.media);
   if (!hasValidVideoCount(media)) {
     return { ok: false, error: "A product can have no more than two videos." };
@@ -182,6 +220,8 @@ export async function updateProductAction(
     .set({
       name: draft.name.trim(),
       priceNaira,
+      description: draft.description.trim(),
+      sizes,
       media,
       updatedAt: new Date(),
     })

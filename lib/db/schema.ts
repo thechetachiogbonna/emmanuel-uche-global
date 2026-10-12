@@ -50,6 +50,8 @@ export const products = pgTable("products", {
   name: text("name").notNull(),
   // Stored as integer kobo-free naira amount; formatted with ₦ at render time.
   priceNaira: integer("price_naira").notNull(),
+  description: text("description").notNull().default(""),
+  sizes: jsonb("sizes").$type<string[]>().notNull().default([]),
   media: jsonb("media").$type<ProductMediaItem[]>().notNull().default([]),
   createdAt: timestamp("created_at").notNull().defaultNow(),
   updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -175,6 +177,7 @@ export const orderItems = pgTable("order_items", {
   // snapshot preserves exactly what the customer actually bought.
   productName: text("product_name").notNull(),
   priceNaira: integer("price_naira").notNull(),
+  size: text("size"),
   quantity: integer("quantity").notNull().default(1),
   img1: text("img1").notNull(),
 });
