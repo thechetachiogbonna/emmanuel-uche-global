@@ -11,6 +11,7 @@ type AccountDrawerProps = {
   session: Session;
   onClose: () => void;
   onLogout: () => void;
+  loggingOut: boolean;
 };
 
 export default function AccountDrawer({
@@ -18,6 +19,7 @@ export default function AccountDrawer({
   session,
   onClose,
   onLogout,
+  loggingOut,
 }: AccountDrawerProps) {
   const [mounted, setMounted] = useState(false);
 
@@ -100,9 +102,11 @@ export default function AccountDrawer({
             </Link>
             <button
               onClick={onLogout}
-              className="mt-6 w-full bg-black py-3 text-[13px] font-normal text-white text-center transition-colors hover:bg-neutral-800"
+              disabled={loggingOut}
+              aria-busy={loggingOut}
+              className="mt-6 w-full bg-black py-3 text-[13px] font-normal text-white text-center transition-colors hover:bg-neutral-800 disabled:opacity-60"
             >
-              Log Out
+              {loggingOut ? "Logging out…" : "Log Out"}
             </button>
           </div>
         ) : (

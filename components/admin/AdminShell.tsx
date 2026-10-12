@@ -4,6 +4,7 @@ import { logoutAction } from "@/lib/actions/auth";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
+import { useState } from "react";
 
 const NAV = [
   { label: "Dashboard", href: "/admin" },
@@ -22,14 +23,21 @@ export default function AdminShell({
 }) {
   const pathname = usePathname();
   const router = useRouter();
+  const [loggingOut, setLoggingOut] = useState(false);
 
   const isActive = (href: string) =>
     href === "/admin" ? pathname === "/admin" : pathname.startsWith(href);
 
   const logout = async () => {
-    await logoutAction();
-    router.push("/");
-    router.refresh();
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await logoutAction();
+      router.push("/");
+      router.refresh();
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -77,9 +85,11 @@ export default function AdminShell({
           </Link>
           <button
             onClick={logout}
+            disabled={loggingOut}
+            aria-busy={loggingOut}
             className="text-left px-3 py-2.5 text-[13px] tracking-wide text-ink-soft hover:bg-sand/40 hover:text-ink rounded-sm transition-colors"
           >
-            Log Out
+            {loggingOut ? "Logging out…" : "Log Out"}
           </button>
         </div>
       </aside>
@@ -92,8 +102,13 @@ export default function AdminShell({
           height={480}
           className="h-12 w-[58px] object-contain object-left"
         />
-        <button onClick={logout} className="text-[12px] text-ink-soft">
-          Log Out
+        <button
+          onClick={logout}
+          disabled={loggingOut}
+          aria-busy={loggingOut}
+          className="text-[12px] text-ink-soft disabled:opacity-60"
+        >
+          {loggingOut ? "Logging out…" : "Log Out"}
         </button>
       </div>
 

@@ -2,11 +2,11 @@ import { randomUUID } from "node:crypto";
 import {
   DeleteObjectCommand,
   PutObjectCommand,
-  S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/auth";
+import { getR2StorageConfig } from "@/lib/r2-storage";
 
 export const runtime = "nodejs";
 
@@ -14,28 +14,6 @@ const IMAGE_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/avi
 const VIDEO_TYPES = new Set(["video/mp4", "video/webm", "video/quicktime"]);
 const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
-
-function getStorageConfig() {
-  const accountId = process.env.R2_ACCOUNT_ID;
-  const accessKeyId = process.env.R2_ACCESS_KEY_ID;
-  const secretAccessKey = process.env.R2_SECRET_ACCESS_KEY;
-  const bucketName = process.env.R2_BUCKET_NAME;
-  const publicUrl = process.env.R2_PUBLIC_URL?.replace(/\/$/, "");
-
-  if (!accountId || !accessKeyId || !secretAccessKey || !bucketName || !publicUrl) {
-    return null;
-  }
-
-  return {
-    bucketName,
-    publicUrl,
-    client: new S3Client({
-      region: "auto",
-      endpoint: `https://${accountId}.r2.cloudflarestorage.com`,
-      credentials: { accessKeyId, secretAccessKey },
-    }),
-  };
-}
 
 function getManagedMediaKey(src: string, publicUrl: string) {
   try {
@@ -78,7 +56,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const config = getStorageConfig();
+  const config = getR2StorageConfig();
   if (!config) {
     return NextResponse.json(
       { error: "R2 upload storage is not configured on the server." },
@@ -145,7 +123,7 @@ export async function DELETE(request: Request) {
     return NextResponse.json({ error: "Media URL is required." }, { status: 400 });
   }
 
-  const config = getStorageConfig();
+  const config = getR2StorageConfig();
   if (!config) {
     return NextResponse.json(
       { error: "R2 storage is not configured on the server." },

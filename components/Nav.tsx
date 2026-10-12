@@ -28,6 +28,7 @@ export default function Nav({
   const [open, setOpen] = useState(false);
   const [collectionsOpen, setCollectionsOpen] = useState(false);
   const [accountOpen, setAccountOpen] = useState(false);
+  const [loggingOut, setLoggingOut] = useState(false);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const mobileMenuRef = useRef<HTMLElement>(null);
   const router = useRouter();
@@ -71,11 +72,17 @@ export default function Nav({
   }, [collectionsOpen]);
 
   const handleLogout = async () => {
-    await logoutAction();
-    setAccountOpen(false);
-    setOpen(false);
-    router.push("/");
-    router.refresh();
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await logoutAction();
+      setAccountOpen(false);
+      setOpen(false);
+      router.push("/");
+      router.refresh();
+    } finally {
+      setLoggingOut(false);
+    }
   };
 
   return (
@@ -268,6 +275,7 @@ export default function Nav({
         session={session}
         onClose={() => setAccountOpen(false)}
         onLogout={handleLogout}
+        loggingOut={loggingOut}
       />
     </>
   );
