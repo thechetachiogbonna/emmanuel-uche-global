@@ -115,10 +115,6 @@ export default function CheckoutForm({ customerName }: { customerName: string })
               <span className="text-ink-soft">Subtotal</span>
               <span>{formatNaira(subtotalNaira)}</span>
             </div>
-            <div className="flex items-center justify-between text-[14px] mb-6 pb-6 border-b border-ink/10">
-              <span className="text-ink-soft">Shipping</span>
-              <span className="text-ink-soft">Calculated separately</span>
-            </div>
             <div className="flex items-center justify-between text-[16px] font-medium mb-6">
               <span>Total</span>
               <span>{formatNaira(subtotalNaira)}</span>

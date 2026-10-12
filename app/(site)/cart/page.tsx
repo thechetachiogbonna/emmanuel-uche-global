@@ -99,9 +99,6 @@ export default function CartPage() {
               <span className="text-ink-soft">Subtotal</span>
               <span>{formatNaira(subtotalNaira)}</span>
             </div>
-            <p className="text-[12px] text-ink-soft mb-6">
-              Shipping and any duties are calculated at checkout.
-            </p>
             <Link
               href="/checkout"
               className="block w-full text-center bg-ink text-ivory text-[12px] tracking-[0.14em] uppercase py-3.5 hover:bg-clay transition-colors"

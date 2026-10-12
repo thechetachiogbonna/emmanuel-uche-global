@@ -56,10 +56,6 @@ export default async function ProductPage({ params }: Props) {
             {product.name}
           </h1>
           <p className="mt-4 text-[15px] text-clay">{product.price}</p>
-          <p className="mt-1 text-[13px] text-ink-soft">
-            <span className="underline underline-offset-4">Shipping</span>{" "}
-            calculated at checkout.
-          </p>
           <div className="my-8 border-t border-ink/10" />
           <ProductAddToBag product={product} />
           {product.description && (
