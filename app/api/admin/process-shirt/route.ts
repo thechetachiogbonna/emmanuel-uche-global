@@ -116,6 +116,8 @@ export async function POST(request: Request) {
 
   let temporaryPublicId: string | null = null;
   let r2Key: string | null = null;
+  let processingStep =
+    "uploading the temporary source image to Cloudinary";
   try {
     const buffer = Buffer.from(await file.arrayBuffer());
     const dataUri = `data:${file.type};base64,${buffer.toString("base64")}`;
@@ -126,6 +128,7 @@ export async function POST(request: Request) {
     });
     temporaryPublicId = upload.public_id;
 
+    processingStep = "generating the mockup with the selected reference background";
     const transformedUrl = cloudinary.url(upload.public_id, {
       secure: true,
       transformation: [
@@ -184,6 +187,7 @@ export async function POST(request: Request) {
       throw new Error("The generated mockup is empty or too large to store.");
     }
 
+    processingStep = "uploading the generated mockup to R2";
     r2Key = `product-media/${randomUUID()}.${extension}`;
     await r2.client.send(
       new PutObjectCommand({
@@ -195,6 +199,7 @@ export async function POST(request: Request) {
       })
     );
 
+    processingStep = "deleting the temporary Cloudinary source image";
     const deletion = await cloudinary.uploader.destroy(temporaryPublicId, {
       invalidate: true,
       resource_type: "image",
@@ -246,15 +251,26 @@ export async function POST(request: Request) {
       }
     }
     console.error(
-      "Could not process and store shirt mockup:",
+      `Could not process and store shirt mockup while ${processingStep}:`,
       error,
       ...cleanupErrors
     );
+    const cloudinaryStatus =
+      error && typeof error === "object" && "http_code" in error
+        ? error.http_code
+        : null;
+    const detail =
+      processingStep === "uploading the temporary source image to Cloudinary" &&
+      cloudinaryStatus === 403
+        ? "Cloudinary rejected the source upload (403). Verify the Cloudinary cloud name, API key, API secret, and that the API key is active."
+        : processingStep ===
+            "generating the mockup with the selected reference background" &&
+          error instanceof Error &&
+          error.message.includes("HTTP 403")
+          ? "Cloudinary denied the generated transformation (403). Check that generative transformations are enabled for the account and that the selected reference image is available."
+          : "Could not complete mockup generation and R2 storage. Check server logs for the failing step and cleanup details before retrying.";
     return NextResponse.json(
-      {
-        error:
-          "Could not complete mockup generation and R2 storage. Check server logs for cleanup details before retrying.",
-      },
+      { error: detail },
       { status: 502 }
     );
   }
