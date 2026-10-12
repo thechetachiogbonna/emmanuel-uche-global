@@ -76,10 +76,15 @@ export default function ProductForm({
   submitLabel: string;
 }) {
   const [name, setName] = useState(initial?.name ?? "");
+  const [isGeneratingName, setIsGeneratingName] = useState(false);
+  const [nameGenerationError, setNameGenerationError] = useState<string | null>(null);
   const [price, setPrice] = useState(() =>
     getPriceDigits(initial?.price ?? "")
   );
   const [description, setDescription] = useState(initial?.description ?? "");
+  const [descriptionInstructions, setDescriptionInstructions] = useState("");
+  const [isGeneratingDescription, setIsGeneratingDescription] = useState(false);
+  const [descriptionGenerationError, setDescriptionGenerationError] = useState<string | null>(null);
   const [sizesText, setSizesText] = useState(
     () => initial?.sizes.join(", ") ?? ""
   );
@@ -108,6 +113,112 @@ export default function ProductForm({
       ...item,
       alt: `${name.trim() || "Product preview"} image ${index + 1}`,
     }));
+
+  const generateName = async () => {
+    const images = media.filter((item) => item.type === "image" && item.src.trim());
+    if (images.length === 0) {
+      setNameGenerationError("Add at least one product image before generating a name.");
+      return;
+    }
+
+    setIsGeneratingName(true);
+    setNameGenerationError(null);
+    try {
+      const response = await fetch("/api/admin/product-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task: "name", media: images }),
+      });
+      const result: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        const message =
+          result &&
+          typeof result === "object" &&
+          "error" in result &&
+          typeof result.error === "string"
+            ? result.error
+            : "Could not generate a product name. Try again.";
+        throw new Error(message);
+      }
+      if (
+        !result ||
+        typeof result !== "object" ||
+        !("name" in result) ||
+        typeof result.name !== "string" ||
+        !result.name.trim()
+      ) {
+        throw new Error("The AI service returned an invalid product name. Try again.");
+      }
+
+      setName(result.name.trim());
+    } catch (generationError) {
+      setNameGenerationError(
+        generationError instanceof Error
+          ? generationError.message
+          : "Could not generate a product name. Try again."
+      );
+    } finally {
+      setIsGeneratingName(false);
+    }
+  };
+
+  const generateDescription = async () => {
+    if (!name.trim()) {
+      setDescriptionGenerationError("Enter a product name before generating a description.");
+      return;
+    }
+
+    const images = media.filter((item) => item.type === "image" && item.src.trim());
+    if (images.length === 0) {
+      setDescriptionGenerationError("Add at least one product image before generating a description.");
+      return;
+    }
+
+    setIsGeneratingDescription(true);
+    setDescriptionGenerationError(null);
+    try {
+      const response = await fetch("/api/admin/product-description", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          task: "description",
+          name: name.trim(),
+          instructions: descriptionInstructions.trim(),
+          media: images,
+        }),
+      });
+      const result: unknown = await response.json().catch(() => null);
+      if (!response.ok) {
+        const message =
+          result &&
+          typeof result === "object" &&
+          "error" in result &&
+          typeof result.error === "string"
+            ? result.error
+            : "Could not generate a product description. Try again.";
+        throw new Error(message);
+      }
+      if (
+        !result ||
+        typeof result !== "object" ||
+        !("description" in result) ||
+        typeof result.description !== "string" ||
+        !result.description.trim()
+      ) {
+        throw new Error("The AI service returned an invalid description. Try again.");
+      }
+
+      setDescription(result.description.trim());
+    } catch (generationError) {
+      setDescriptionGenerationError(
+        generationError instanceof Error
+          ? generationError.message
+          : "Could not generate a product description. Try again."
+      );
+    } finally {
+      setIsGeneratingDescription(false);
+    }
+  };
 
   useEffect(() => {
     try {
@@ -449,15 +560,75 @@ export default function ProductForm({
         className="m-0 grid min-w-0 gap-5 border-0 p-0"
       >
         <div>
-          <label className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2">
+          <label
+            htmlFor="product-name"
+            className="block text-[12px] tracking-wide uppercase text-ink-soft mb-2"
+          >
             Product Name
           </label>
           <input
+            id="product-name"
             value={name}
             onChange={(e) => setName(e.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                void generateName();
+              }
+            }}
+            aria-busy={isGeneratingName}
             className="w-full border border-ink/20 px-3 py-2.5 text-sm outline-none focus:border-clay transition-colors"
             placeholder="e.g. Àdìrẹ́ Wrap Dress"
           />
+          <div className="mt-2 flex items-center justify-between gap-3">
+            <p className="text-[10px] text-ink-soft">
+              Uses uploaded JPEG, PNG, or WebP image URLs. Ctrl/⌘ + Enter to generate.
+            </p>
+            <button
+              type="button"
+              onClick={() => void generateName()}
+              disabled={
+                isGeneratingName ||
+                isGeneratingDescription ||
+                isFormLocked ||
+                uploadingIndex !== null
+              }
+              className="flex shrink-0 items-center gap-2 bg-[#705985] px-3 py-2 text-[11px] font-medium text-white transition-colors hover:bg-[#604975] disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isGeneratingName ? (
+                <span
+                  aria-hidden="true"
+                  className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                />
+              ) : (
+                <svg
+                  aria-hidden="true"
+                  viewBox="0 0 20 20"
+                  className="h-4 w-4"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="1.5"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="M10 2.5 11.8 8l5.7 2-5.7 2-1.8 5.5L8.2 12 2.5 10l5.7-2L10 2.5Z"
+                  />
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    d="m15.5 2 .7 2.1 2.3.9-2.3.8-.7 2.2-.8-2.2-2.2-.8 2.2-.9.8-2.1Z"
+                  />
+                </svg>
+              )}
+              {isGeneratingName ? "Naming..." : "Generate name"}
+            </button>
+          </div>
+          {nameGenerationError && (
+            <p className="mt-2 text-[12px] text-red-700" role="alert">
+              {nameGenerationError}
+            </p>
+          )}
         </div>
 
         <div>
@@ -484,21 +655,96 @@ export default function ProductForm({
         </div>
 
         <div>
-          <label
-            htmlFor="product-description"
-            className="mb-2 block text-[12px] tracking-wide uppercase text-ink-soft"
-          >
-            Product Description
-          </label>
+          <div className="mb-2 flex items-center justify-between gap-3">
+            <label
+              htmlFor="product-description"
+              className="block text-[12px] tracking-wide uppercase text-ink-soft"
+            >
+              Product Description
+            </label>
+            <span className="text-[10px] uppercase tracking-wide text-ink-soft">
+              AI assisted
+            </span>
+          </div>
           <textarea
             id="product-description"
             value={description}
             onChange={(event) => setDescription(event.target.value)}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" && (event.ctrlKey || event.metaKey)) {
+                event.preventDefault();
+                void generateDescription();
+              }
+            }}
             rows={5}
             maxLength={10_000}
+            aria-busy={isGeneratingDescription}
             className="w-full resize-y border border-ink/20 px-3 py-2.5 text-sm outline-none transition-colors focus:border-clay"
-            placeholder="Describe the piece, its fabric, fit, and styling."
+            placeholder="Describe the visible colours, print, and design details."
           />
+          <div className="mt-3 border border-ink/10 bg-white p-2.5">
+            <label htmlFor="description-ai-prompt" className="sr-only">
+              Optional AI writing instructions
+            </label>
+            <input
+              id="description-ai-prompt"
+              value={descriptionInstructions}
+              onChange={(event) => setDescriptionInstructions(event.target.value)}
+              maxLength={1000}
+              disabled={isGeneratingDescription || isGeneratingName}
+              placeholder="Message (optional): add guidance for the description..."
+              className="w-full bg-transparent px-1 py-1.5 text-[12px] outline-none placeholder:text-ink-soft/60"
+            />
+            <div className="mt-2 flex items-center justify-between gap-3">
+              <p className="text-[10px] text-ink-soft">
+                Review the draft before saving. Ctrl/⌘ + Enter to generate.
+              </p>
+              <button
+                type="button"
+                onClick={() => void generateDescription()}
+                disabled={
+                  isGeneratingDescription ||
+                  isGeneratingName ||
+                  isFormLocked ||
+                  uploadingIndex !== null
+                }
+                className="flex shrink-0 items-center gap-2 bg-[#705985] px-3 py-2.5 text-[11px] font-medium text-white transition-colors hover:bg-[#604975] disabled:cursor-not-allowed disabled:opacity-60"
+              >
+                {isGeneratingDescription ? (
+                  <span
+                    aria-hidden="true"
+                    className="h-3.5 w-3.5 animate-spin rounded-full border-2 border-white/40 border-t-white"
+                  />
+                ) : (
+                  <svg
+                    aria-hidden="true"
+                    viewBox="0 0 20 20"
+                    className="h-4 w-4"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="1.5"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M10 2.5 11.8 8l5.7 2-5.7 2-1.8 5.5L8.2 12 2.5 10l5.7-2L10 2.5Z"
+                    />
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="m15.5 2 .7 2.1 2.3.9-2.3.8-.7 2.2-.8-2.2-2.2-.8 2.2-.9.8-2.1Z"
+                    />
+                  </svg>
+                )}
+                {isGeneratingDescription ? "Generating..." : "Generate description"}
+              </button>
+            </div>
+          </div>
+          {descriptionGenerationError && (
+            <p className="mt-2 text-[12px] text-red-700" role="alert">
+              {descriptionGenerationError}
+            </p>
+          )}
         </div>
 
         <div>

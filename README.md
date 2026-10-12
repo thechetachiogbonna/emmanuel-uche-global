@@ -76,6 +76,12 @@ The admin uploader accepts JPEG, PNG, WebP, and AVIF images up to 20 MB, plus MP
 
 Each product has its own page with a media gallery, price, description, and optional size choices. Edit the description and enter sizes as comma-separated options (for example, `XS, S, M, L, XL`) in the admin product form. Leave sizes blank for items that do not need a size selection. Selected sizes and quantities are saved with the cart and order. Run `npm run db:migrate` after updating to apply the product-detail and order-size fields.
 
+## AI product names and descriptions
+
+The admin product form can draft a product name from up to four product images and generate a description from the product name and images using Gemini 3.5 Flash-Lite. It sends only the uploaded image URLs to Gemini's URL Context tool; the app does not download or attach image bytes to the request. Images must be publicly accessible JPEG, PNG, or WebP files in the configured HTTPS `R2_PUBLIC_URL` product-media folder. Generated names follow a style/pattern/theme plus garment type format; both names and descriptions fill their fields for review and are only saved when the product form is submitted. Set `GEMINI_API_KEY` in the server environment; create a key in [Google AI Studio](https://aistudio.google.com/app/apikey).
+
+Review Google's [current Gemini API pricing](https://ai.google.dev/gemini-api/docs/pricing) and data-use terms before enabling it. Free-tier requests may be used to improve Google's products; use a paid tier if that is not appropriate for your catalog. Keep the key server-side and never expose it with a `NEXT_PUBLIC_` environment variable.
+
 ## Stack notes
 
 - **ORM**: [Drizzle](https://orm.drizzle.team), not Prisma — Prisma's engine binaries need network access this environment didn't have during development, so this was built and verified against Drizzle instead. Functionally equivalent for this project's needs.
