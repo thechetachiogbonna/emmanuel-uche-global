@@ -15,7 +15,10 @@ const IMAGE_TYPES = new Set([
 ]);
 const MAX_IMAGE_BYTES = 20 * 1024 * 1024;
 const MAX_GENERATED_BYTES = 30 * 1024 * 1024;
-const REFERENCE_BACKGROUND_ID = "products/master_reference_bg";
+const REFERENCE_BACKGROUND_IDS = {
+  "1": "products/master_reference_bg_1",
+  "2": "products/master_reference_bg_2",
+} as const;
 const GENERATED_IMAGE_TYPES = new Map([
   ["image/jpeg", "jpeg"],
   ["image/png", "png"],
@@ -75,14 +78,22 @@ export async function POST(request: Request) {
   const file = formData.get("file");
   const skuValue = formData.get("sku");
   const viewValue = formData.get("view");
+  const backgroundValue = formData.get("background");
   const sku = normalizeSku(typeof skuValue === "string" ? skuValue : "");
   const view = viewValue === "back" ? "back" : viewValue === "front" ? "front" : null;
+  const backgroundId =
+    backgroundValue === "1" || backgroundValue === "2"
+      ? REFERENCE_BACKGROUND_IDS[backgroundValue]
+      : null;
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Choose a shirt image to process." }, { status: 400 });
   }
   if (!view) {
     return NextResponse.json({ error: "Choose whether this is the front or back view." }, { status: 400 });
+  }
+  if (!backgroundId) {
+    return NextResponse.json({ error: "Choose a valid mockup background." }, { status: 400 });
   }
   if (!IMAGE_TYPES.has(file.type)) {
     return NextResponse.json(
@@ -119,7 +130,7 @@ export async function POST(request: Request) {
       secure: true,
       transformation: [
         {
-          effect: `gen_background_replace:prompt_match_reference_${REFERENCE_BACKGROUND_ID}`,
+          effect: `gen_background_replace:prompt_match_reference_${backgroundId}`,
         },
         {
           effect: "gen_replace:from_neck tag;to_clean professional apparel inner collar",

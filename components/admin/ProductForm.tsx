@@ -7,11 +7,25 @@ import {
   useState,
   type FormEvent,
 } from "react";
+import Image from "next/image";
 import MediaCarousel, { type MediaItem } from "@/components/MediaCarousel";
 import type { ProductDraft } from "@/lib/actions/admin-collections";
 import type { ProductMediaItem } from "@/lib/product-media";
 
 type Draft = ProductDraft;
+const MOCKUP_BACKGROUNDS = [
+  {
+    id: "1",
+    label: "Painted wall & gray mannequin",
+    src: "/images/master_reference_bg_1.jpg",
+  },
+  {
+    id: "2",
+    label: "Blue geometric wall & black mannequin",
+    src: "/images/master_reference_bg_2.jpg",
+  },
+] as const;
+
 const IMAGE_TYPES = new Set([
   "image/jpeg",
   "image/png",
@@ -107,6 +121,7 @@ export default function ProductForm({
   const [hasSubmittedSuccessfully, setHasSubmittedSuccessfully] = useState(false);
   const [isGeneratingMockup, setIsGeneratingMockup] = useState(false);
   const [mockupView, setMockupView] = useState<"front" | "back">("front");
+  const [mockupBackground, setMockupBackground] = useState<"1" | "2">("1");
   const [mockupError, setMockupError] = useState<string | null>(null);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
@@ -503,6 +518,7 @@ export default function ProductForm({
       formData.set("file", file);
       formData.set("sku", name.trim() || "shirt-product");
       formData.set("view", mockupView);
+      formData.set("background", mockupBackground);
 
       const response = await fetch("/api/admin/process-shirt", {
         method: "POST",
@@ -914,6 +930,44 @@ export default function ProductForm({
                 {isGeneratingMockup ? "Generating..." : "Choose shirt photo"}
               </label>
             </div>
+            <fieldset className="mt-4" disabled={isGeneratingMockup || uploadingIndex !== null}>
+              <legend className="mb-2 text-[10px] font-medium uppercase tracking-[0.1em] text-ink-soft">
+                Choose a background
+              </legend>
+              <div className="grid grid-cols-2 gap-3">
+                {MOCKUP_BACKGROUNDS.map((background) => (
+                  <label
+                    key={background.id}
+                    className={`cursor-pointer overflow-hidden border bg-white transition-colors ${
+                      mockupBackground === background.id
+                        ? "border-clay ring-1 ring-clay"
+                        : "border-ink/15 hover:border-ink/40"
+                    }`}
+                  >
+                    <input
+                      type="radio"
+                      name="mockup-background"
+                      value={background.id}
+                      checked={mockupBackground === background.id}
+                      onChange={() => setMockupBackground(background.id)}
+                      className="peer sr-only"
+                    />
+                    <span className="relative block aspect-[3/4] w-full bg-sand peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-clay">
+                      <Image
+                        src={background.src}
+                        alt={background.label}
+                        fill
+                        sizes="(max-width: 640px) 45vw, 220px"
+                        className="object-cover"
+                      />
+                    </span>
+                    <span className="block px-2.5 py-2 text-[10px] leading-snug text-ink">
+                      {background.label}
+                    </span>
+                  </label>
+                ))}
+              </div>
+            </fieldset>
             {mockupError && (
               <p className="mt-2 text-[12px] text-red-700" role="alert">
                 {mockupError}
