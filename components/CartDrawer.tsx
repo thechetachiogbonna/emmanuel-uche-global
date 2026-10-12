@@ -1,7 +1,9 @@
 "use client";
 
+import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect } from "react";
+import { useEffect, useMemo, useState } from "react";
+import type { CartRecommendation } from "@/lib/data";
 import { useCart } from "@/lib/cart/CartContext";
 import { useCartDrawer } from "@/lib/cart/CartDrawerContext";
 
@@ -9,25 +11,30 @@ function formatNaira(amount: number) {
   return `\u20A6${amount.toLocaleString("en-NG", { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 }
 
-const RECOMMENDATIONS = [
-  {
-    id: "rec_kofi_earrings",
-    name: "KOFI EARRINGS",
-    price: 167200,
-    img1: "https://cdn.shopify.com/s/files/1/0393/2741/files/ANDREAIYAMAHKOFI_400x400.jpg?v=1776441151",
-  },
-  {
-    id: "rec_nali_robe",
-    name: "NALI ROBE - DANDI PRINT",
-    price: 363300,
-    img1: "https://cdn.shopify.com/s/files/1/0393/2741/files/ANDREAIYAMAH-SS25-ECOMMERCE-KUWABIKINI_NALIORGANZAROBEDANDIPRINT-SWIM-ONFIGURE-FRONT2_400x400.jpg?v=1760465432",
-  },
-];
-
-export default function CartDrawer() {
+export default function CartDrawer({
+  recommendations,
+}: {
+  recommendations: CartRecommendation[];
+}) {
   const router = useRouter();
   const { open, closeCart } = useCartDrawer();
   const { items, addItem, updateQuantity, removeItem, subtotalNaira } = useCart();
+  const [selectedSizes, setSelectedSizes] = useState<Record<string, string>>({});
+  const displayedRecommendations = useMemo(() => {
+    const cartProductIds = new Set(items.map((item) => item.productId));
+    const cartCollectionSlugs = new Set(
+      items.flatMap((item) => item.collectionSlug ?? [])
+    );
+
+    return recommendations
+      .filter((product) => !cartProductIds.has(product.id))
+      .sort(
+        (a, b) =>
+          Number(cartCollectionSlugs.has(b.collectionSlug)) -
+          Number(cartCollectionSlugs.has(a.collectionSlug))
+      )
+      .slice(0, 4);
+  }, [items, recommendations]);
 
   useEffect(() => {
     if (!open) return;
@@ -81,16 +88,6 @@ export default function CartDrawer() {
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
-        </div>
-
-        {/* Progress Bar & Shipping Note */}
-        <div className="px-6 pt-4 pb-4 border-b border-gray-100 text-center">
-          <div className="w-full bg-gray-100 h-2 rounded-full overflow-hidden mb-2.5">
-            <div className="bg-black h-full w-full rounded-full" />
-          </div>
-          <p className="text-[12px] text-gray-600 font-normal tracking-wide">
-            Your Complimentary Shipping Unlocked!
-          </p>
         </div>
 
         {/* Main Content Area */}
@@ -166,44 +163,82 @@ export default function CartDrawer() {
             </div>
           )}
 
-          {/* Recommendations ("YOU MAY ALSO LIKE") */}
-          <div className="bg-[#F8F8F8] px-6 py-6 border-t border-gray-100">
-            <h4 className="text-[12px] font-medium tracking-[0.1em] text-center text-gray-600 uppercase mb-5">
-              YOU MAY ALSO LIKE
-            </h4>
-            <div className="space-y-4">
-              {RECOMMENDATIONS.map((rec) => (
-                <div key={rec.id} className="flex items-center gap-4">
-                  <img
-                    src={rec.img1}
-                    alt={rec.name}
-                    className="w-16 h-20 object-cover bg-white shrink-0"
-                  />
-                  <div className="flex-1 min-w-0">
-                    <h5 className="text-[12px] font-medium text-gray-700 tracking-wide uppercase truncate">
-                      {rec.name}
-                    </h5>
-                    <p className="text-[12px] text-gray-500 mt-0.5">
-                      {formatNaira(rec.price)}
-                    </p>
+          {items.length > 0 && displayedRecommendations.length > 0 && (
+            <section className="border-t border-gray-100 bg-[#F8F8F8] px-6 py-6">
+              <h4 className="mb-5 text-center text-[12px] font-medium tracking-[0.1em] text-gray-600 uppercase">
+                YOU MAY ALSO LIKE
+              </h4>
+              <div className="space-y-4">
+                {displayedRecommendations.map((product) => (
+                  <div key={product.id} className="flex items-center gap-4">
+                    <Link
+                      href={`/products/${product.id}`}
+                      onClick={closeCart}
+                      className="h-20 w-16 shrink-0 bg-white"
+                      aria-label={`View ${product.name}`}
+                    >
+                      {/* eslint-disable-next-line @next/next/no-img-element -- product images are arbitrary external URLs */}
+                      <img
+                        src={product.image}
+                        alt={product.name}
+                        className="h-full w-full object-cover"
+                      />
+                    </Link>
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        href={`/products/${product.id}`}
+                        onClick={closeCart}
+                        className="block truncate text-[12px] font-medium tracking-wide text-gray-700 uppercase hover:underline"
+                      >
+                        {product.name}
+                      </Link>
+                      <p className="mt-0.5 text-[12px] text-gray-500">
+                        {product.price}
+                      </p>
+                      {product.sizes.length > 0 && (
+                        <select
+                          aria-label={`Choose a size for ${product.name}`}
+                          value={selectedSizes[product.id] ?? ""}
+                          onChange={(event) =>
+                            setSelectedSizes((current) => ({
+                              ...current,
+                              [product.id]: event.target.value,
+                            }))
+                          }
+                          className="mt-2 w-full border border-gray-200 bg-white px-2 py-1.5 text-[11px]"
+                        >
+                          <option value="">Choose size</option>
+                          {product.sizes.map((size) => (
+                            <option key={size} value={size}>
+                              {size}
+                            </option>
+                          ))}
+                        </select>
+                      )}
+                    </div>
+                    <button
+                      onClick={() =>
+                        addItem({
+                          id: product.id,
+                          name: product.name,
+                          price: product.price,
+                          img1: product.image,
+                          size: selectedSizes[product.id] || null,
+                          collectionSlug: product.collectionSlug,
+                        })
+                      }
+                      disabled={
+                        product.sizes.length > 0 && !selectedSizes[product.id]
+                      }
+                      className="shrink-0 bg-black px-3 py-2.5 text-[11px] font-normal text-white transition-colors hover:bg-gray-800 disabled:cursor-not-allowed disabled:opacity-40"
+                    >
+                      Add to bag
+                    </button>
                   </div>
-                  <button
-                    onClick={() =>
-                      addItem({
-                        id: rec.id,
-                        name: rec.name,
-                        price: `₦${rec.price.toLocaleString()}`,
-                        img1: rec.img1,
-                      })
-                    }
-                    className="bg-black text-white text-[11px] font-normal px-4 py-2.5 hover:bg-gray-800 transition-colors shrink-0"
-                  >
-                    Add to bag
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+                ))}
+              </div>
+            </section>
+          )}
         </div>
 
         {/* Footer Area */}

@@ -9,13 +9,14 @@ export type CartItem = {
   priceNaira: number; // parsed, used for subtotal math
   img1: string;
   size: string | null;
+  collectionSlug?: string;
   quantity: number;
 };
 
 type CartContextValue = {
   items: CartItem[];
   hydrated: boolean;
-  addItem: (product: { id: string; name: string; price: string; img1: string; size?: string | null }, quantity?: number) => void;
+  addItem: (product: { id: string; name: string; price: string; img1: string; size?: string | null; collectionSlug?: string }, quantity?: number) => void;
   removeItem: (productId: string, size?: string | null) => void;
   updateQuantity: (productId: string, quantity: number, size?: string | null) => void;
   clear: () => void;
@@ -77,6 +78,7 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
               priceNaira: parseNaira(product.price),
               img1: product.img1,
               size,
+              collectionSlug: product.collectionSlug,
               quantity,
             },
           ];

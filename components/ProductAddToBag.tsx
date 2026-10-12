@@ -28,6 +28,7 @@ export default function ProductAddToBag({
         price: product.price,
         img1: image,
         size: selectedSize || null,
+        collectionSlug: product.collectionSlug,
       },
       quantity
     );

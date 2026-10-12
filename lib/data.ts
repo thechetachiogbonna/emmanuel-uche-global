@@ -18,6 +18,16 @@ export type ProductDetail = Product & {
   sizes: string[];
 };
 
+export type CartRecommendation = {
+  id: string;
+  name: string;
+  price: string;
+  image: string;
+  collectionSlug: string;
+  collectionName: string;
+  sizes: string[];
+};
+
 export type Collection = {
   slug: string;
   season: string;
@@ -167,6 +177,46 @@ export async function getRandomAvailableProducts(limit = 6): Promise<Product[]> 
     price: formatNaira(product.priceNaira),
     media: getProductMedia(product.media),
   }));
+}
+
+export async function getCartRecommendations(
+  limit = 24
+): Promise<CartRecommendation[]> {
+  const rows = await db
+    .select({
+      id: productsTable.id,
+      name: productsTable.name,
+      priceNaira: productsTable.priceNaira,
+      media: productsTable.media,
+      sizes: productsTable.sizes,
+      collectionSlug: collectionsTable.slug,
+      collectionName: collectionsTable.name,
+    })
+    .from(productsTable)
+    .innerJoin(
+      collectionsTable,
+      eq(productsTable.collectionId, collectionsTable.id)
+    )
+    .where(eq(collectionsTable.status, "available"))
+    .orderBy(sql`random()`)
+    .limit(limit);
+
+  return rows.flatMap((product) => {
+    const image = getProductMedia(product.media).find(
+      (item) => item.type === "image"
+    )?.src;
+    if (!image) return [];
+
+    return [{
+      id: product.id,
+      name: product.name,
+      price: formatNaira(product.priceNaira),
+      image,
+      collectionSlug: product.collectionSlug,
+      collectionName: product.collectionName,
+      sizes: product.sizes,
+    }];
+  });
 }
 
 /**
