@@ -7,31 +7,11 @@ import {
   useState,
   type FormEvent,
 } from "react";
-import Image from "next/image";
 import MediaCarousel, { type MediaItem } from "@/components/MediaCarousel";
 import type { ProductDraft } from "@/lib/actions/admin-collections";
 import type { ProductMediaItem } from "@/lib/product-media";
 
 type Draft = ProductDraft;
-const MOCKUP_BACKGROUNDS = [
-  {
-    id: "1",
-    label: "Painted wall & gray mannequin",
-    src: "/images/master_reference_bg_1.jpg",
-  },
-  {
-    id: "2",
-    label: "Blue geometric wall & black mannequin",
-    src: "/images/master_reference_bg_2.jpg",
-  },
-] as const;
-
-const IMAGE_TYPES = new Set([
-  "image/jpeg",
-  "image/png",
-  "image/webp",
-  "image/avif",
-]);
 
 type SavedDraft = {
   version: 1 | 2;
@@ -119,18 +99,13 @@ export default function ProductForm({
   const [mediaError, setMediaError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [hasSubmittedSuccessfully, setHasSubmittedSuccessfully] = useState(false);
-  const [isGeneratingMockup, setIsGeneratingMockup] = useState(false);
-  const [mockupView, setMockupView] = useState<"front" | "back">("front");
-  const [mockupBackground, setMockupBackground] = useState<"1" | "2">("1");
-  const [mockupError, setMockupError] = useState<string | null>(null);
   const [uploadingIndex, setUploadingIndex] = useState<number | null>(null);
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [pendingDeletions, setPendingDeletions] = useState<string[]>([]);
   const uploadedMedia = useRef(new Set<string>());
   const submissionInProgress = useRef(false);
   const submissionSaved = useRef(false);
-  const isFormLocked =
-    isSubmitting || hasSubmittedSuccessfully || isGeneratingMockup;
+  const isFormLocked = isSubmitting || hasSubmittedSuccessfully;
   const storageKey = `admin-product-draft:${draftStorageKey}`;
   const videoCount = media.filter((item) => item.type === "video").length;
   const previewMedia: MediaItem[] = media
@@ -501,65 +476,6 @@ export default function ProductForm({
     }
   };
 
-  const generateMockup = async (file: File) => {
-    setMockupError(null);
-    if (!IMAGE_TYPES.has(file.type)) {
-      setMockupError("Choose a JPEG, PNG, WebP, or AVIF shirt image.");
-      return;
-    }
-    if (file.size <= 0 || file.size > 20 * 1024 * 1024) {
-      setMockupError("Shirt images must be smaller than 20 MB.");
-      return;
-    }
-
-    setIsGeneratingMockup(true);
-    try {
-      const formData = new FormData();
-      formData.set("file", file);
-      formData.set("sku", name.trim() || "shirt-product");
-      formData.set("view", mockupView);
-      formData.set("background", mockupBackground);
-
-      const response = await fetch("/api/admin/process-shirt", {
-        method: "POST",
-        body: formData,
-      });
-      const result: unknown = await response.json().catch(() => null);
-      if (!response.ok) {
-        const message =
-          result &&
-          typeof result === "object" &&
-          "error" in result &&
-          typeof result.error === "string"
-            ? result.error
-            : "Could not generate an apparel mockup. Try again.";
-        throw new Error(message);
-      }
-      const url =
-        result && typeof result === "object" && "url" in result
-          ? result.url
-          : null;
-      if (typeof url !== "string" || !url.trim()) {
-        throw new Error("The image service returned an invalid mockup URL.");
-      }
-
-      setMedia((current) => [
-        ...current,
-        { src: url, type: "image" },
-      ]);
-      uploadedMedia.current.add(url);
-      setMediaError(null);
-    } catch (processingError) {
-      setMockupError(
-        processingError instanceof Error
-          ? processingError.message
-          : "Could not generate an apparel mockup. Try again."
-      );
-    } finally {
-      setIsGeneratingMockup(false);
-    }
-  };
-
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (submissionInProgress.current || submissionSaved.current) return;
@@ -884,95 +800,6 @@ export default function ProductForm({
                 </p>
               )}
             </div>
-          </div>
-
-          <div className="mb-4 border border-ink/10 bg-white p-3">
-            <p className="text-[11px] font-semibold uppercase tracking-[0.1em] text-ink">
-              Generate mannequin mockup
-            </p>
-            <p className="mt-1 text-[11px] text-ink-soft">
-              Upload a front or back shirt photo. The result is added to the live preview and saved with this product.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-2">
-              <label htmlFor="mockup-view" className="sr-only">
-                Shirt photo view
-              </label>
-              <select
-                id="mockup-view"
-                value={mockupView}
-                onChange={(event) =>
-                  setMockupView(event.target.value as "front" | "back")
-                }
-                disabled={isGeneratingMockup || uploadingIndex !== null}
-                className="border border-ink/20 bg-white px-2.5 py-2 text-xs outline-none focus:border-clay"
-              >
-                <option value="front">Front view</option>
-                <option value="back">Back view</option>
-              </select>
-              <label
-                className={`cursor-pointer border border-ink/20 px-2.5 py-2 text-[10px] uppercase tracking-wide hover:border-ink ${
-                  isGeneratingMockup || uploadingIndex !== null
-                    ? "pointer-events-none opacity-50"
-                    : ""
-                }`}
-              >
-                <input
-                  type="file"
-                  accept="image/jpeg,image/png,image/webp,image/avif"
-                  className="sr-only"
-                  disabled={isGeneratingMockup || uploadingIndex !== null}
-                  onChange={(event) => {
-                    const file = event.currentTarget.files?.[0];
-                    if (file) void generateMockup(file);
-                    event.currentTarget.value = "";
-                  }}
-                />
-                {isGeneratingMockup ? "Generating..." : "Choose shirt photo"}
-              </label>
-            </div>
-            <fieldset className="mt-4" disabled={isGeneratingMockup || uploadingIndex !== null}>
-              <legend className="mb-2 text-[10px] font-medium uppercase tracking-[0.1em] text-ink-soft">
-                Choose a background
-              </legend>
-              <div className="grid grid-cols-2 gap-3">
-                {MOCKUP_BACKGROUNDS.map((background) => (
-                  <label
-                    key={background.id}
-                    className={`cursor-pointer overflow-hidden border bg-white transition-colors ${
-                      mockupBackground === background.id
-                        ? "border-clay ring-1 ring-clay"
-                        : "border-ink/15 hover:border-ink/40"
-                    }`}
-                  >
-                    <input
-                      type="radio"
-                      name="mockup-background"
-                      value={background.id}
-                      checked={mockupBackground === background.id}
-                      onChange={() => setMockupBackground(background.id)}
-                      className="peer sr-only"
-                    />
-                    <span className="relative block aspect-[3/4] w-full bg-sand peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-clay">
-                      <Image
-                        src={background.src}
-                        alt={background.label}
-                        fill
-                        sizes="(max-width: 640px) 45vw, 220px"
-                        className="object-cover"
-                      />
-                    </span>
-                    <span className="block px-2.5 py-2 text-[10px] leading-snug text-ink">
-                      {background.label}
-                    </span>
-                  </label>
-                ))}
-              </div>
-            </fieldset>
-            {mockupError && (
-              <p className="mt-2 text-[12px] text-red-700" role="alert">
-                {mockupError}
-              </p>
-            )}
           </div>
 
           <div className="grid gap-3">
